@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>UFC Schedule – Fight Times</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    /* Reuse same root variables and base styles from index */
+    :root {
+      --bg: #0a0a0f;
+      --card: #111118;
+      --accent: #e63946;
+      --accent-dark: #b32d38;
+      --text: #e0e0ff;
+      --text-muted: #a0a0cc;
+      --border: rgba(230, 57, 70, 0.2);
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+    header {
+      padding: 3rem 2rem 1.5rem;
+      text-align: center;
+    }
+    h1 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 3.8rem;
+      background: linear-gradient(90deg, #e63946, #f48c96);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 0.5rem;
+    }
+    .back { color: var(--accent); text-decoration: none; font-weight: 500; }
+    .back:hover { text-decoration: underline; }
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 1.5rem 4rem;
+    }
+    .event {
+      background: var(--card);
+      border-radius: 12px;
+      padding: 1.8rem;
+      margin: 1.5rem 0;
+      border: 1px solid var(--border);
+      transition: all 0.3s ease;
+    }
+    .event:hover {
+      transform: translateY(-6px);
+      border-color: var(--accent);
+      box-shadow: 0 15px 40px rgba(230,57,70,0.15);
+    }
+    .date {
+      font-size: 1.1rem;
+      color: #ffdd57;
+      font-weight: 600;
+      margin-bottom: 0.6rem;
+    }
+    .title {
+      font-size: 1.5rem;
+      margin: 0.4rem 0;
+      color: #fff;
+    }
+    .details {
+      color: var(--text-muted);
+      font-size: 1rem;
+    }
+    .loading, .error {
+      text-align: center;
+      padding: 4rem 1rem;
+      font-size: 1.2rem;
+      color: var(--text-muted);
+    }
+    footer {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      border-top: 1px solid var(--border);
+    }
+    @media (max-width: 768px) {
+      h1 { font-size: 2.8rem; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>UFC Schedule</h1>
+    <p><a href="index.html" class="back">← Back to Home</a></p>
+  </header>
+
+  <div class="container">
+    <div id="ufc-events">
+      <div class="loading">Loading upcoming UFC events... (via TheSportsDB free API)</div>
+    </div>
+  </div>
+
+  <footer>
+    © 2026 Fight Times • UFC data from TheSportsDB.com • Fetches live on page load
+  </footer>
+
+  <script>
+    async function loadUFC() {
+      const container = document.getElementById('ufc-events');
+      try {
+        // TheSportsDB UFC league ID is 4443 – search for upcoming events
+        const res = await fetch('https://www.thesportsdb.com/api/v1/json/3/eventsnextleague.php?id=4443');
+        const data = await res.json();
+
+        container.innerHTML = '';
+
+        if (data.events && data.events.length > 0) {
+          data.events.slice(0, 12).forEach(ev => {  // Limit to next 12 for performance
+            const date = ev.dateEvent ? new Date(ev.dateEvent).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) : 'TBA';
+            const time = ev.strTime ? ev.strTime : '';
+            const location = ev.strVenue ? `${ev.strVenue}, ${ev.strCountry || ''}` : 'TBA';
+            const title = ev.strEvent || 'Upcoming UFC Event';
+
+            container.innerHTML += `
+              <div class="event">
+                <div class="date">${date} ${time ? '• ' + time : ''}</div>
+                <div class="title">${title}</div>
+                <div class="details">${location} • ${ev.strTVStation || 'Streaming TBA'}</div>
+              </div>
+            `;
+          });
+        } else {
+          container.innerHTML = '<div class="error">No upcoming events found or API issue. Check back soon!</div>';
+        }
+      } catch (err) {
+        console.error(err);
+        container.innerHTML = '<div class="error">Failed to load UFC schedule. Try refreshing or check your connection.</div>';
+      }
+    }
+
+    // Load immediately
+    loadUFC();
+  </script>
+</body>
+</html>

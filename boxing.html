@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Boxing Schedule – Fight Times</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    /* Same styles as ufc.html for consistency */
+    :root {
+      --bg: #0a0a0f;
+      --card: #111118;
+      --accent: #e63946;
+      --accent-dark: #b32d38;
+      --text: #e0e0ff;
+      --text-muted: #a0a0cc;
+      --border: rgba(230, 57, 70, 0.2);
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+    header {
+      padding: 3rem 2rem 1.5rem;
+      text-align: center;
+    }
+    h1 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 3.8rem;
+      background: linear-gradient(90deg, #e63946, #f48c96);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 0.5rem;
+    }
+    .back { color: var(--accent); text-decoration: none; font-weight: 500; }
+    .back:hover { text-decoration: underline; }
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 1.5rem 4rem;
+    }
+    .event {
+      background: var(--card);
+      border-radius: 12px;
+      padding: 1.8rem;
+      margin: 1.5rem 0;
+      border: 1px solid var(--border);
+      transition: all 0.3s ease;
+    }
+    .event:hover {
+      transform: translateY(-6px);
+      border-color: var(--accent);
+      box-shadow: 0 15px 40px rgba(230,57,70,0.15);
+    }
+    .date {
+      font-size: 1.1rem;
+      color: #ffdd57;
+      font-weight: 600;
+      margin-bottom: 0.6rem;
+    }
+    .title {
+      font-size: 1.5rem;
+      margin: 0.4rem 0;
+      color: #fff;
+    }
+    .details {
+      color: var(--text-muted);
+      font-size: 1rem;
+    }
+    .note {
+      background: rgba(230,57,70,0.1);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin: 2rem 0;
+      font-size: 1.05rem;
+    }
+    footer {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      border-top: 1px solid var(--border);
+    }
+    @media (max-width: 768px) {
+      h1 { font-size: 2.8rem; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Boxing Schedule</h1>
+    <p><a href="index.html" class="back">← Back to Home</a></p>
+  </header>
+
+  <div class="container">
+    <div class="note">
+      <strong>Note:</strong> Boxing lacks a reliable free public API for upcoming fights right now (most are paid/limited). This list is curated from major sources (CBS, ESPN, DAZN, BoxRec) as of Feb 2026. Update manually or ask AI for fresh HTML every few weeks!
+    </div>
+
+    <!-- Paste/update events here -->
+    <div class="event">
+      <div class="date">March 21, 2026</div>
+      <div class="title">Carlos Adames (c) vs. Austin Williams</div>
+      <div class="details">Orlando, FL • Title fight • Streaming TBA</div>
+    </div>
+    <div class="event">
+      <div class="date">March 28, 2026</div>
+      <div class="title">Sebastian Fundora (c) vs. Keith Thurman</div>
+      <div class="details">Las Vegas, NV • Welterweight/Super Welter • DAZN</div>
+    </div>
+    <div class="event">
+      <div class="date">April 4, 2026</div>
+      <div class="title">Deontay Wilder vs. Derek Chisora</div>
+      <div class="details">London, UK • Heavyweights • DAZN PPV</div>
+    </div>
+    <div class="event">
+      <div class="date">April 11, 2026</div>
+      <div class="title">Tyson Fury vs. Arslanbek Makhmudov</div>
+      <div class="details">TBA • Heavyweight • Netflix</div>
+    </div>
+    <!-- Add more as needed – copy/paste format -->
+
+  </div>
+
+  <footer>
+    © 2026 Fight Times • Boxing data curated from public sources • Update via edit & push
+  </footer>
+</body>
+</html>

@@ -1,24 +1,167 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>My First Free Site</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Fight Times – UFC & Boxing Schedules</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
   <style>
-    body { font-family: Arial, sans-serif; text-align: center; padding: 50px; background: #0f0f1a; color: #e0e0ff; }
-    h1 { color: #00d4ff; }
-    .prompt { font-family: 'Courier New', monospace; background: #1a1a2e; padding: 20px; border-radius: 8px; display: inline-block; margin: 20px; }
+    :root {
+      --bg: #0a0a0f;
+      --card: #111118;
+      --accent: #e63946;
+      --accent-dark: #b32d38;
+      --text: #e0e0ff;
+      --text-muted: #a0a0cc;
+      --border: rgba(230, 57, 70, 0.2);
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      min-height: 100vh;
+      background-image: 
+        radial-gradient(circle at 10% 20%, rgba(230,57,70,0.08) 0%, transparent 25%),
+        radial-gradient(circle at 90% 80%, rgba(230,57,70,0.06) 0%, transparent 35%);
+    }
+    header {
+      padding: 4rem 2rem 2rem;
+      text-align: center;
+      background: linear-gradient(to bottom, rgba(230,57,70,0.08), transparent);
+    }
+    h1 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: clamp(3rem, 10vw, 6.5rem);
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      background: linear-gradient(90deg, #e63946, #f48c96);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 0.8rem;
+    }
+    .tagline {
+      font-size: 1.3rem;
+      color: var(--text-muted);
+      max-width: 600px;
+      margin: 0 auto 3rem;
+    }
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 2rem;
+      padding: 0 2rem 4rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .card {
+      background: var(--card);
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      transition: all 0.4s ease;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      position: relative;
+    }
+    .card:hover {
+      transform: translateY(-12px);
+      border-color: var(--accent);
+      box-shadow: 0 20px 50px rgba(230,57,70,0.25);
+    }
+    .card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, transparent, rgba(230,57,70,0.08));
+      opacity: 0;
+      transition: opacity 0.4s;
+    }
+    .card:hover::before { opacity: 1; }
+    .card-img {
+      height: 220px;
+      background-size: cover;
+      background-position: center;
+      position: relative;
+    }
+    .card-img::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, var(--card) 30%, transparent);
+    }
+    .card-body {
+      padding: 2rem 1.8rem;
+    }
+    .card h2 {
+      font-size: 2.2rem;
+      margin-bottom: 1rem;
+      color: #fff;
+    }
+    .card p {
+      color: var(--text-muted);
+      margin-bottom: 1.8rem;
+    }
+    .btn {
+      display: inline-block;
+      background: var(--accent);
+      color: white;
+      padding: 0.9rem 2rem;
+      border-radius: 50px;
+      text-decoration: none;
+      font-weight: 600;
+      transition: all 0.3s;
+      border: none;
+      cursor: pointer;
+    }
+    .btn:hover {
+      background: var(--accent-dark);
+      transform: scale(1.05);
+    }
+    footer {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      border-top: 1px solid var(--border);
+    }
+    @media (max-width: 768px) {
+      h1 { font-size: 4.5rem; }
+      .cards { padding: 0 1rem; }
+    }
   </style>
 </head>
 <body>
-  <h1>Hello World! 🚀</h1>
-  <p>This is my £0 Cloudflare Pages site — made today.</p>
-  
-  <div class="prompt">
-    user@home:~$ echo "It works!"<br>
-    It works!
+  <header>
+    <h1>Fight Times</h1>
+    <p class="tagline">Real-time major UFC & Boxing schedules – Stay in the fight.</p>
+  </header>
+
+  <div class="cards">
+    <div class="card">
+      <div class="card-img" style="background-image: url('https://images.unsplash.com/photo-1552664730-d307ca884978?w=800&q=80');"></div>
+      <div class="card-body">
+        <h2>UFC Schedule</h2>
+        <p>Upcoming UFC events, Fight Nights, numbered cards – fetched live where possible.</p>
+        <a href="ufc.html" class="btn">View UFC Schedule</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-img" style="background-image: url('https://images.unsplash.com/photo-1545913838-9d0d4e8e6f3e?w=800&q=80');"></div>
+      <div class="card-body">
+        <h2>Boxing Schedule</h2>
+        <p>Major title fights, big names – updated manually from top sources.</p>
+        <a href="boxing.html" class="btn">View Boxing Schedule</a>
+      </div>
+    </div>
   </div>
-  
-  <p><a href="/about.html" style="color: #00d4ff;">Go to About page →</a></p>
+
+  <footer>
+    © 2026 Fight Times • Powered by Cloudflare Pages • Data from public sources • Last checked Feb 2026
+  </footer>
 </body>
 </html>
