@@ -9,6 +9,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;900&family=Barlow:wght@400;500&display=swap" rel="stylesheet">
 
 <style>
+/* Your existing CSS remains unchanged – it's solid! */
 :root {
   --bg:       #080808;
   --surface:  #101010;
@@ -466,6 +467,7 @@ function showError(msg) {
 }
 
 function dayKey(dateStr) {
+  if (!dateStr) return '';
   const d = new Date(dateStr);
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
@@ -487,17 +489,19 @@ function formatDayHeader(dateStr) {
 }
 
 function formatTime(dateStr) {
+  if (!dateStr) return 'TBA';
   return new Date(dateStr).toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit' });
 }
 
 function formatTimeZone(dateStr) {
-  // Extract timezone abbreviation from locale string
+  if (!dateStr) return '';
   const str = new Date(dateStr).toLocaleTimeString('en-GB', { timeZoneName:'short' });
   const parts = str.split(' ');
   return parts[parts.length - 1] || 'GMT';
 }
 
 function getCountdown(dateStr) {
+  if (!dateStr) return { str: 'TBA', state: 'upcoming' };
   const diff = new Date(dateStr) - Date.now();
   if (diff <= 0) return { str:'● LIVE NOW', state:'live' };
   const d = Math.floor(diff / 86400000);
@@ -509,14 +513,22 @@ function getCountdown(dateStr) {
 }
 
 function parseFighters(title) {
-  // Strip event prefix like "UFC Fight Night: "
-  const clean = title.replace(/^[^:]+:\s*/, '');
+  if (!title || title.trim() === '' || title.toUpperCase().includes('TBA') || title.toUpperCase().includes('TBD')) {
+    return null; // Skip rendering if TBA/TBD or empty
+  }
+  const clean = title.replace(/^[^:]+:\s*/, '').trim();
   const m = clean.match(/^(.+?)\s+vs\.?\s+(.+)$/i);
-  if (m) return [m[1].trim(), m[2].trim()];
-  return [title, null];
+  if (m) {
+    const f1 = m[1].trim();
+    const f2 = m[2].trim();
+    if (f1.toUpperCase().includes('TBA') || f2.toUpperCase().includes('TBA')) return null;
+    return [f1, f2];
+  }
+  return [clean, null];
 }
 
 function getPillHTML(dateStr) {
+  if (!dateStr) return '';
   const diff = new Date(dateStr) - Date.now();
   if (diff <= 0 && diff > -10800000) return '<span class="status-pill pill-live">● LIVE</span>';
   if (diff > 0 && diff < 3600000)    return '<span class="status-pill pill-soon">SOON</span>';
@@ -540,38 +552,41 @@ function normalizeBoxing(raw) {
 
   return arr.map(f => ({
     type:      'Boxing',
-    title:     f.title || 'TBA vs TBA',
-    displayTitle: f.title || 'TBA vs TBA',
-    date:      f.date || f.fight_date || f.event_date || '',
+    title:     f.event || f.title || '',
+    displayTitle: f.main_event || f.title || '',
+    date:      f.date || f.time_utc || f.event_date || '',
     location:  f.location || '',
     venue:     f.venue || '',
     posterUrl: f.poster_image_url || null,
     promotion: f.promotion || 'Boxing',
-  })).filter(f => f.date);
+  })).filter(f => f.date && f.displayTitle && !f.displayTitle.toUpperCase().includes('TBA'));
 }
 
 function normalizeUFC(raw) {
   const arr = Array.isArray(raw) ? raw : [];
   return arr.map(event => ({
     type: 'UFC',
-    title: event.title || event.event || 'UFC Event',
-    displayTitle: event.displayTitle || event.main_event || event.title || 'TBA vs TBA',
-    date: event.date || event.time_utc || '',  // prefer ISO string
+    title: event.event || event.title || 'UFC Event',
+    displayTitle: event.main_event || event.displayTitle || event.title || '',
+    date: event.date || event.time_utc || '',
     location: event.location || event.venue || '',
     venue: event.venue || '',
     promotion: event.promotion || 'UFC',
     posterUrl: event.posterUrl || null,
-  })).filter(e => e.date);
+  })).filter(e => e.date && e.displayTitle && !e.displayTitle.toUpperCase().includes('TBA'));
 }
+
 // ── HERO ──────────────────────────────────────────────────────────────────────
 
 const _intervals = [];
 
 function buildHeroCard(event, countClass) {
+  const [f1, f2] = parseFighters(event.displayTitle || event.title);
+  if (!f1) return null; // Skip TBA/invalid
+
   const card = document.createElement('div');
   card.className = 'hero-card';
 
-  const [f1, f2] = parseFighters(event.displayTitle || event.title);
   const time = formatTime(event.date);
   const tz   = formatTimeZone(event.date);
   const loc  = [event.venue, event.location].filter(Boolean).join(', ') || '—';
@@ -623,21 +638,29 @@ function renderHero(events) {
   const container = document.getElementById('heroCards');
   container.innerHTML = '';
 
-  if (!events.length) {
-    container.innerHTML = '<div class="state-box">No fights found for the next fight night.</div>';
+  const validEvents = events.filter(ev => {
+    const [f1] = parseFighters(ev.displayTitle || ev.title);
+    return f1 && f1 !== 'TBA';
+  });
+
+  if (!validEvents.length) {
+    container.innerHTML = '<div class="state-box">No confirmed fights found for the next fight night.</div>';
     return;
   }
 
-  const n = Math.min(events.length, 4);
+  const n = Math.min(validEvents.length, 4);
   container.className = `hero-cards count-${n}`;
 
-  const dk = dayKey(events[0].date);
+  const dk = dayKey(validEvents[0].date);
   document.getElementById('heroLabel').textContent =
     dk === todayKey()   ? "Tonight's Fights" :
     dk === tomorrowKey() ? "Tomorrow's Fights" :
     "Next Fight Night";
 
-  events.forEach(ev => container.appendChild(buildHeroCard(ev, n)));
+  validEvents.forEach(ev => {
+    const card = buildHeroCard(ev, n);
+    if (card) container.appendChild(card);
+  });
 }
 
 // ── SCHEDULE ──────────────────────────────────────────────────────────────────
@@ -645,10 +668,12 @@ function renderHero(events) {
 let rowIdx = 0;
 
 function buildFightRow(event) {
+  const [f1, f2] = parseFighters(event.displayTitle || event.title);
+  if (!f1) return null; // Skip TBA/invalid
+
   const row = document.createElement('div');
   row.className = 'fight-row';
 
-  const [f1, f2] = parseFighters(event.displayTitle || event.title);
   const sportClass = event.type === 'UFC' ? 'sport-ufc' : 'sport-boxing';
   const loc  = [event.venue, event.location].filter(Boolean);
   const time = formatTime(event.date);
@@ -691,14 +716,19 @@ function renderSchedule(events) {
   list.innerHTML = '';
   rowIdx = 0;
 
-  if (!events.length) {
-    list.innerHTML = '<div class="state-box">No events in the next 7 days. Check back soon.</div>';
+  const validEvents = events.filter(ev => {
+    const [f1] = parseFighters(ev.displayTitle || ev.title);
+    return f1 && f1 !== 'TBA';
+  });
+
+  if (!validEvents.length) {
+    list.innerHTML = '<div class="state-box">No confirmed events in the next 7 days. Check back soon.</div>';
     return;
   }
 
   // Group by day
   const groups = {};
-  events.forEach(e => {
+  validEvents.forEach(e => {
     const k = dayKey(e.date);
     if (!groups[k]) groups[k] = [];
     groups[k].push(e);
@@ -717,8 +747,14 @@ function renderSchedule(events) {
         <div class="day-count">${fights.length} event${fights.length > 1 ? 's' : ''}</div>
       </div>`;
 
-    fights.forEach(fight => group.appendChild(buildFightRow(fight)));
-    list.appendChild(group);
+    fights.forEach(fight => {
+      const row = buildFightRow(fight);
+      if (row) group.appendChild(row);
+    });
+
+    if (group.querySelectorAll('.fight-row').length > 0) {
+      list.appendChild(group);
+    }
   });
 }
 
@@ -733,21 +769,21 @@ async function init() {
     const all    = [...boxing, ...ufc];
 
     const now     = Date.now();
-    const in7days = now + 7 * 86400000;
+    const in7days = now + 7 * 86400000; // Change to 30 * 86400000 for longer view during testing
 
-    // Include events started up to 3h ago (might still be live)
     const upcoming = all
       .filter(e => {
+        if (!e.date) return false;
         const t = new Date(e.date).getTime();
-        return t >= (now - 10800000) && t <= in7days;
+        return !isNaN(t) && t >= (now - 10800000) && t <= in7days;
       })
       .sort((a, b) => new Date(a.date) - new Date(b.date));
 
     if (!upcoming.length) {
       document.getElementById('heroCards').innerHTML =
-        '<div class="state-box">No events in the next 7 days.</div>';
+        '<div class="state-box">No confirmed events in the next 7 days.</div>';
       document.getElementById('scheduleList').innerHTML =
-        '<div class="state-box">Check back soon.</div>';
+        '<div class="state-box">Check back soon for updates.</div>';
       return;
     }
 
@@ -762,7 +798,7 @@ async function init() {
     console.error(err);
     showError(err.message);
     document.getElementById('heroCards').innerHTML =
-      '<div class="state-box" style="color:#ff6b6b">Failed to load events.</div>';
+      '<div class="state-box" style="color:#ff6b6b">Failed to load events. Try refreshing.</div>';
     document.getElementById('scheduleList').innerHTML = '';
   }
 }
