@@ -1,11 +1,9 @@
 export async function onRequestGet(context) {
   const RAPID_KEY = context.env.RAPIDAPI_KEY;
 
-  // ✅ NEW: Tapology API — org IDs 16=UFC, 69=Bellator, 78=PFL
   const MMA_API =
     "https://unofficial-tapology-api.p.rapidapi.com/api/schedule/events/16,69,78?fields=organization%2Cmain_event%2Cweight_class%2Cdatetime%2Ccity%2Csubregion%2Cbroadcast%2Ctitle_bout_desc%2Cfight_card";
 
-  // 🥊 Boxing — unchanged
   const BOXING_API =
     "https://boxing-data-api.p.rapidapi.com/v1/events/schedule?days=7";
 
@@ -33,34 +31,55 @@ export async function onRequestGet(context) {
     safeFetch(BOXING_API, { headers: headers("boxing-data-api.p.rapidapi.com") }),
   ]);
 
-  // MMA
-  let mmaEvents = [];
-  if (mmaRes && mmaRes.ok) {
-    try {
-      const mmaData = await mmaRes.json();
-      // Tapology returns { events: [...] } or an array directly
-      mmaEvents = mmaData?.events || mmaData?.data || mmaData || [];
-    } catch (e) {
-      console.warn("MMA JSON parse failed:", e.message);
+  // MMA — return raw response so we can see the real shape
+  let mmaRaw = null;
+  let mmaError = null;
+  if (mmaRes) {
+    if (mmaRes.ok) {
+      try {
+        mmaRaw = await mmaRes.json();
+      } catch (e) {
+        mmaError = "JSON parse failed: " + e.message;
+      }
+    } else {
+      mmaError = `HTTP ${mmaRes.status}: ${await mmaRes.text()}`;
     }
   } else {
-    console.warn("MMA API unavailable:", mmaRes?.status);
+    mmaError = "Request timed out or failed";
   }
 
-  // Boxing
-  let boxingData = [];
-  if (boxingRes && boxingRes.ok) {
-    try {
-      boxingData = await boxingRes.json();
-    } catch (e) {
-      console.warn("Boxing JSON parse failed:", e.message);
+  // Boxing — return raw response too
+  let boxingRaw = null;
+  let boxingError = null;
+  if (boxingRes) {
+    if (boxingRes.ok) {
+      try {
+        boxingRaw = await boxingRes.json();
+      } catch (e) {
+        boxingError = "JSON parse failed: " + e.message;
+      }
+    } else {
+      boxingError = `HTTP ${boxingRes.status}: ${await boxingRes.text()}`;
     }
   } else {
-    console.warn("Boxing API unavailable:", boxingRes?.status);
+    boxingError = "Request timed out or failed";
   }
 
+  // Return everything raw — no normalization — so we can see the real data shape
   return new Response(
-    JSON.stringify({ ufc: mmaEvents, boxing: boxingData }),
+    JSON.stringify({
+      debug: true,
+      mma: {
+        error: mmaError,
+        status: mmaRes?.status,
+        data: mmaRaw,
+      },
+      boxing: {
+        error: boxingError,
+        status: boxingRes?.status,
+        data: boxingRaw,
+      },
+    }, null, 2),
     {
       headers: {
         "Content-Type": "application/json",
