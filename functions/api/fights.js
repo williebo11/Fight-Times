@@ -1,8 +1,7 @@
 export async function onRequestGet(context) {
-  const RAPID_KEY   = context.env.RAPIDAPI_KEY;
-  const SPORTRADAR_KEY = context.env.SPORTRADAR_KEY; // add this in Cloudflare env vars
+  const RAPID_KEY      = context.env.RAPIDAPI_KEY;
+  const SPORTRADAR_KEY = context.env.SPORTRADAR_KEY;
 
-  const MMA_API   = `https://api.sportradar.com/mma/trial/v2/en/schedules/upcoming/schedule.json?api_key=${SPORTRADAR_KEY}`;
   const BOXING_API = "https://boxing-data-api.p.rapidapi.com/v1/events/schedule?days=7";
 
   async function safeFetch(url, options = {}, timeoutMs = 8000) {
@@ -14,13 +13,14 @@ export async function onRequestGet(context) {
       return res;
     } catch (err) {
       clearTimeout(timer);
-      console.warn(`safeFetch failed for ${url}:`, err.message);
       return null;
     }
   }
 
-  const [mmaRes, boxingRes] = await Promise.all([
-    safeFetch(MMA_API), // SportRadar uses key in URL, no extra headers needed
+  // Try both trial and production URLs simultaneously
+  const [trialRes, prodRes, boxingRes] = await Promise.all([
+    safeFetch(`https://api.sportradar.com/mma/trial/v2/en/schedules/upcoming/schedule.json?api_key=${SPORTRADAR_KEY}`),
+    safeFetch(`https://api.sportradar.com/mma/production/v2/en/schedules/upcoming/schedule.json?api_key=${SPORTRADAR_KEY}`),
     safeFetch(BOXING_API, {
       headers: {
         "X-RapidAPI-Key":  RAPID_KEY,
@@ -29,39 +29,28 @@ export async function onRequestGet(context) {
     }),
   ]);
 
-  // MMA
-  let mmaEvents = [];
-  if (mmaRes && mmaRes.ok) {
-    try {
-      const json = await mmaRes.json();
-      // SportRadar returns { sport_events: [...] }
-      mmaEvents = json?.sport_events || json?.schedules || json?.results || [];
-    } catch (e) {
-      console.warn("MMA parse failed:", e.message);
-    }
-  } else {
-    console.warn("MMA unavailable:", mmaRes?.status);
-  }
+  // Read both MMA responses as raw text so we see exactly what comes back
+  const trialText = trialRes  ? await trialRes.text()  : "no response";
+  const prodText  = prodRes   ? await prodRes.text()   : "no response";
 
-  // Boxing
+  let trialJson = null, prodJson = null;
+  try { trialJson = JSON.parse(trialText); } catch(e) { trialJson = trialText; }
+  try { prodJson  = JSON.parse(prodText);  } catch(e) { prodJson  = prodText; }
+
+  // Boxing (working — keep as normal)
   let boxingData = [];
   if (boxingRes && boxingRes.ok) {
-    try {
-      boxingData = await boxingRes.json();
-    } catch (e) {
-      console.warn("Boxing parse failed:", e.message);
-    }
-  } else {
-    console.warn("Boxing unavailable:", boxingRes?.status);
+    try { boxingData = await boxingRes.json(); } catch(e) {}
   }
 
   return new Response(
-    JSON.stringify({ ufc: mmaEvents, boxing: boxingData }),
-    {
-      headers: {
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*",
+    JSON.stringify({
+      _debug: {
+        trial: { status: trialRes?.status, data: trialJson },
+        prod:  { status: prodRes?.status,  data: prodJson  },
       },
-    }
+      boxing: boxingData,
+    }, null, 2),
+    { headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" } }
   );
 }
