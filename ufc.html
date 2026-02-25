@@ -180,7 +180,8 @@ function formatDate(dateStr){
   return new Date(dateStr).toLocaleDateString('en-GB',{
     weekday:'long',
     day:'numeric',
-    month:'long'
+    month:'long',
+    year:'numeric'
   }).toUpperCase();
 }
 
@@ -191,16 +192,35 @@ function formatTime(dateStr){
   });
 }
 
-function getCountdown(dateStr){
-  const diff=new Date(dateStr)-Date.now();
-  if(diff<=0) return "● LIVE";
+function getTimezone(){
+  return Intl.DateTimeFormat().resolvedOptions().timeZone;
+}
 
-  const d=Math.floor(diff/86400000);
-  const h=Math.floor((diff%86400000)/3600000);
-  const m=Math.floor((diff%3600000)/60000);
+// Live countdown HH:MM:SS
+function startCountdown(element, dateStr){
+  function update(){
+    const now = Date.now();
+    const target = new Date(dateStr).getTime();
+    const diff = target - now;
 
-  if(d>0) return `${d}D ${h}H`;
-  return `${h}H ${m}M`;
+    if(diff <= 0){
+      element.innerHTML = "● LIVE";
+      return;
+    }
+
+    const days = Math.floor(diff / 86400000);
+    const hours = Math.floor((diff % 86400000) / 3600000);
+    const minutes = Math.floor((diff % 3600000) / 60000);
+    const seconds = Math.floor((diff % 60000) / 1000);
+
+    element.innerHTML =
+      `${days}D ${hours.toString().padStart(2,'0')}H ` +
+      `${minutes.toString().padStart(2,'0')}M ` +
+      `${seconds.toString().padStart(2,'0')}S`;
+  }
+
+  update();
+  setInterval(update, 1000);
 }
 
 // ─────────────────────────
@@ -208,10 +228,10 @@ function getCountdown(dateStr){
 // ─────────────────────────
 
 async function fetchUFC(){
-  const res=await fetch('/api/fights');
+  const res = await fetch('/api/fights');
   if(!res.ok) throw new Error("API Error");
-  const data=await res.json();
-  return (data.ufc||[]);
+  const data = await res.json();
+  return (data.ufc || []);
 }
 
 // ─────────────────────────
@@ -220,35 +240,60 @@ async function fetchUFC(){
 
 async function init(){
   try{
-    const fights=await fetchUFC();
-    const list=document.getElementById('ufcList');
-    list.innerHTML='';
+    const fights = await fetchUFC();
+    const list = document.getElementById('ufcList');
+    list.innerHTML = '';
 
-    if(!fights.length){
-      list.innerHTML='<div class="state-box">No upcoming UFC fights.</div>';
+    const now = new Date();
+
+    // FILTER OUT OLD FIGHTS
+    const upcoming = fights.filter(f => new Date(f.date) > now);
+
+    if(!upcoming.length){
+      list.innerHTML =
+        '<div class="state-box">No upcoming UFC fights.</div>';
       return;
     }
 
-    fights
+    upcoming
       .sort((a,b)=>new Date(a.date)-new Date(b.date))
-      .forEach(f=>{
-        const card=document.createElement('div');
-        card.className='ufc-card';
+      .forEach(f => {
 
-        card.innerHTML=`
+        const card = document.createElement('div');
+        card.className = 'ufc-card';
+
+        card.innerHTML = `
           <div class="ufc-date">${formatDate(f.date)}</div>
           <div class="ufc-fighters">${f.main_event}</div>
+
+          <div style="font-family:'Barlow Condensed'; font-size:.9rem; margin-bottom:.6rem;">
+            ${f.event || 'UFC Event'}
+          </div>
+
+          <div style="color:var(--muted); font-size:.85rem; margin-bottom:1rem;">
+            ${f.venue || 'Location TBA'}
+          </div>
+
           <div class="ufc-meta">
-            <div class="ufc-time">${formatTime(f.date)}</div>
-            <div class="ufc-countdown">${getCountdown(f.date)}</div>
+            <div>
+              <div class="ufc-time">${formatTime(f.date)}</div>
+              <div style="font-size:.7rem;color:var(--muted)">
+                ${getTimezone()}
+              </div>
+            </div>
+            <div class="ufc-countdown"></div>
           </div>
         `;
 
         list.appendChild(card);
+
+        // Start live countdown
+        const countdownEl = card.querySelector('.ufc-countdown');
+        startCountdown(countdownEl, f.date);
       });
 
   }catch(err){
-    document.getElementById('ufcList').innerHTML=
+    document.getElementById('ufcList').innerHTML =
       '<div class="state-box">Error loading UFC fights.</div>';
   }
 }
