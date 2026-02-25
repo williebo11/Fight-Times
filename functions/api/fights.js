@@ -1,13 +1,14 @@
 export async function onRequestGet(context) {
   try {
-    const UFC_API = "dd182ebd-221a-4ccf-a649-02806c1ce388";
-    const BOXING_API = "ecb9ddf1b3msh9a639108aea55e9p19af3fjsn3f3aedde51b9";
+
+    // Real endpoints
+    const UFC_API = "https://api.balldontlie.io/mma/v1/events";
+    const BOXING_API = "https://boxing-data-api.p.rapidapi.com/v1/events/schedule?days=30";
 
     const [ufcRes, boxingRes] = await Promise.all([
       fetch(UFC_API, {
         headers: {
-          "X-RapidAPI-Key": context.env.RAPIDAPI_KEY,
-          "X-RapidAPI-Host": "ufc-api-host"
+          "Authorization": context.env.UFC_API_KEY
         }
       }),
       fetch(BOXING_API, {
@@ -23,11 +24,7 @@ export async function onRequestGet(context) {
 
     return new Response(
       JSON.stringify({ ufc, boxing }),
-      {
-        headers: {
-          "Content-Type": "application/json"
-        }
-      }
+      { headers: { "Content-Type": "application/json" } }
     );
 
   } catch (err) {
