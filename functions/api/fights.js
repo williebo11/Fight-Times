@@ -17,11 +17,10 @@ export async function onRequestGet(context) {
     }
   }
 
-  // SportRadar MMA uses daily schedule — build next 7 days
   const dates = Array.from({ length: 7 }, (_, i) => {
     const d = new Date();
     d.setDate(d.getDate() + i);
-    return d.toISOString().split('T')[0]; // "YYYY-MM-DD"
+    return d.toISOString().split('T')[0];
   });
 
   const sportradarHeaders = {
@@ -29,7 +28,6 @@ export async function onRequestGet(context) {
     "accept": "application/json",
   };
 
-  // Fire all requests in parallel
   const [boxingRes, ...mmaResponses] = await Promise.all([
     safeFetch(BOXING_API, {
       headers: {
@@ -45,7 +43,7 @@ export async function onRequestGet(context) {
     ),
   ]);
 
-  // Read all MMA responses raw
+  // Read raw SportRadar responses for debug
   const mmaDebug = await Promise.all(
     mmaResponses.map(async (res, i) => {
       if (!res) return { date: dates[i], status: null, error: "no response" };
@@ -63,7 +61,11 @@ export async function onRequestGet(context) {
   }
 
   return new Response(
-    JSON.stringify({ _mmaDebug: mmaDebug, boxing: boxingData }, null, 2),
+    JSON.stringify({
+      ufc: [],          // keeps frontend working
+      boxing: boxingData,
+      _debug: mmaDebug, // SportRadar raw — check /api/fights to see this
+    }, null, 2),
     { headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" } }
   );
 }
