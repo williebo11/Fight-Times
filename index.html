@@ -187,17 +187,54 @@ nav a:hover { color:var(--text); }
 
 .hero-meta-value.live-val { color:var(--red); animation: blink 1s infinite; }
 
-/* FIGHT SPORT BADGE */
+/* ───────────────────────────── */
+/* ELITE SPORT BADGE UPGRADE */
+/* ───────────────────────────── */
+
 .fight-sport {
   font-family:'Barlow Condensed',sans-serif;
-  font-size:0.68rem; font-weight:700;
-  letter-spacing:0.18em; text-transform:uppercase;
-  padding:.22rem .55rem; border-radius:2px;
-  white-space:nowrap; display:inline-block;
+  font-size:0.7rem;
+  font-weight:800;
+  letter-spacing:0.2em;
+  text-transform:uppercase;
+  padding:.35rem .75rem;
+  border-radius:3px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-width:70px;
+  transition:all .25s ease;
 }
-.sport-ufc    { background:rgba(232,0,61,0.15); color:var(--red); border:1px solid rgba(232,0,61,0.3); }
-.sport-boxing { background:rgba(245,197,24,0.1); color:var(--gold); border:1px solid rgba(245,197,24,0.25); }
 
+.fight-sport::before {
+  content:'';
+  width:6px;
+  height:6px;
+  border-radius:50%;
+  margin-right:.5rem;
+}
+
+.sport-ufc {
+  background:linear-gradient(135deg, rgba(232,0,61,.18), rgba(232,0,61,.05));
+  color:var(--red);
+  border:1px solid rgba(232,0,61,.4);
+}
+
+.sport-ufc::before {
+  background:var(--red);
+  box-shadow:0 0 8px var(--red);
+}
+
+.sport-boxing {
+  background:linear-gradient(135deg, rgba(245,197,24,.18), rgba(245,197,24,.05));
+  color:var(--gold);
+  border:1px solid rgba(245,197,24,.35);
+}
+
+.sport-boxing::before {
+  background:var(--gold);
+  box-shadow:0 0 8px var(--gold);
+}
 /* SCHEDULE SECTION */
 .schedule-section { max-width:1400px; margin:0 auto; padding:3rem 3rem 6rem; }
 
@@ -216,6 +253,49 @@ nav a:hover { color:var(--text); }
   letter-spacing:0.2em; text-transform:uppercase;
   color:var(--muted);
 }
+
+
+/* ───────────────────────────── */
+/* ELITE RANGE TOGGLE */
+/* ───────────────────────────── */
+
+.range-toggle {
+  display:flex;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:4px;
+  overflow:hidden;
+}
+
+.range-btn {
+  font-family:'Barlow Condensed',sans-serif;
+  font-weight:700;
+  font-size:0.75rem;
+  letter-spacing:0.18em;
+  text-transform:uppercase;
+  padding:.55rem 1.2rem;
+  background:transparent;
+  color:var(--muted);
+  border:none;
+  cursor:pointer;
+  transition:all .25s ease;
+}
+
+.range-btn:hover {
+  background:rgba(255,255,255,0.04);
+  color:var(--text);
+}
+
+.range-btn.active {
+  background:linear-gradient(135deg, var(--red), #a8002b);
+  color:#fff;
+  box-shadow:0 0 14px rgba(232,0,61,.35);
+}
+
+
+
+
+
 
 /* Day group */
 .day-group { margin-bottom:2rem; animation: fadeUp .5s ease both; }
@@ -652,7 +732,11 @@ function renderSchedule(events) {
     const tz = formatTimeZone(event.date);
 
     row.innerHTML = `
-      <div><strong>${event.type}</strong></div>
+      <div>
+        <span class="fight-sport ${event.type === 'UFC' ? 'sport-ufc' : 'sport-boxing'}">
+          ${event.type}
+        </span>
+      </div>
       <div class="fight-matchup">
         <div class="fight-fighters">${f1} ${f2 ? 'vs ' + f2 : ''}</div>
         <div class="fight-event-name">${event.title}</div>
@@ -739,5 +823,4 @@ init();
 </script>
 </body>
 </html>
-
 
