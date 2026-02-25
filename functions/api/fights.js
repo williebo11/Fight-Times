@@ -8,7 +8,7 @@ export async function onRequestGet(context) {
 
     // 🥊 Boxing
     const BOXING_API =
-      "https://boxing-data-api.p.rapidapi.com/v1/events/schedule?days=30";
+      "https://boxing-data-api.p.rapidapi.com/v1/events/schedule?days=7";
 
     const [mmaRes, boxingRes] = await Promise.all([
       fetch(MMA_API, {
