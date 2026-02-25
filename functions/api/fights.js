@@ -22,13 +22,3 @@ export async function onRequest(context) {
     }
   });
 }
-```
-
-4. Scroll down → click **"Commit changes"**
-
----
-
-## Step 3 — Cloudflare will auto-deploy
-Since your site auto-deploys from GitHub, Cloudflare will pick up the new file within a minute or two. Your worker will then be live at:
-```
-https://your-site.pages.dev/api/fights
