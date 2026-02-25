@@ -1,136 +1,303 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Boxing Schedule – Fight Times</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
-  <style>
-    /* Same styles as ufc.html for consistency */
-    :root {
-      --bg: #0a0a0f;
-      --card: #111118;
-      --accent: #e63946;
-      --accent-dark: #b32d38;
-      --text: #e0e0ff;
-      --text-muted: #a0a0cc;
-      --border: rgba(230, 57, 70, 0.2);
-    }
-    * { margin:0; padding:0; box-sizing:border-box; }
-    body {
-      font-family: 'Inter', system-ui, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      line-height: 1.6;
-      min-height: 100vh;
-    }
-    header {
-      padding: 3rem 2rem 1.5rem;
-      text-align: center;
-    }
-    h1 {
-      font-family: 'Orbitron', sans-serif;
-      font-size: 3.8rem;
-      background: linear-gradient(90deg, #e63946, #f48c96);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      margin-bottom: 0.5rem;
-    }
-    .back { color: var(--accent); text-decoration: none; font-weight: 500; }
-    .back:hover { text-decoration: underline; }
-    .container {
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 0 1.5rem 4rem;
-    }
-    .event {
-      background: var(--card);
-      border-radius: 12px;
-      padding: 1.8rem;
-      margin: 1.5rem 0;
-      border: 1px solid var(--border);
-      transition: all 0.3s ease;
-    }
-    .event:hover {
-      transform: translateY(-6px);
-      border-color: var(--accent);
-      box-shadow: 0 15px 40px rgba(230,57,70,0.15);
-    }
-    .date {
-      font-size: 1.1rem;
-      color: #ffdd57;
-      font-weight: 600;
-      margin-bottom: 0.6rem;
-    }
-    .title {
-      font-size: 1.5rem;
-      margin: 0.4rem 0;
-      color: #fff;
-    }
-    .details {
-      color: var(--text-muted);
-      font-size: 1rem;
-    }
-    .note {
-      background: rgba(230,57,70,0.1);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 1.5rem;
-      margin: 2rem 0;
-      font-size: 1.05rem;
-    }
-    footer {
-      text-align: center;
-      padding: 3rem 1rem;
-      color: var(--text-muted);
-      font-size: 0.95rem;
-      border-top: 1px solid var(--border);
-    }
-    @media (max-width: 768px) {
-      h1 { font-size: 2.8rem; }
-    }
-  </style>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Fight Times – Boxing Schedule</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;900&family=Barlow:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --bg:#080808;
+  --surface:#101010;
+  --surface2:#181818;
+  --red:#e8003d;
+  --gold:#f5c518;
+  --text:#f0f0f0;
+  --muted:#666;
+  --border:rgba(255,255,255,0.06);
+}
+
+*{margin:0;padding:0;box-sizing:border-box}
+
+body{
+  font-family:'Barlow',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+}
+
+header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:1.4rem 3rem;
+  border-bottom:1px solid var(--border);
+  position:sticky;
+  top:0;
+  background:rgba(8,8,8,.95);
+  backdrop-filter:blur(10px);
+}
+
+.logo{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:1.9rem;
+  letter-spacing:.1em;
+}
+.logo span{color:var(--red)}
+
+nav a{
+  font-family:'Barlow Condensed',sans-serif;
+  text-transform:uppercase;
+  font-weight:700;
+  font-size:.85rem;
+  letter-spacing:.18em;
+  color:var(--muted);
+  text-decoration:none;
+}
+nav a:hover{color:var(--text)}
+
+.page-section{
+  max-width:900px;
+  margin:0 auto;
+  padding:3rem 2rem 5rem;
+}
+
+.page-title{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:3rem;
+  letter-spacing:.05em;
+  margin-bottom:2rem;
+}
+
+.boxing-list{
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+  background:var(--border);
+  border:1px solid var(--border);
+}
+
+.boxing-card{
+  background:var(--surface);
+  padding:2.5rem 2.8rem;
+  position:relative;
+  transition:.25s;
+}
+
+.boxing-card:hover{
+  background:var(--surface2);
+}
+
+.boxing-card::before{
+  content:'';
+  position:absolute;
+  top:0;
+  left:0;
+  right:0;
+  height:3px;
+  background:linear-gradient(90deg,var(--red),transparent);
+}
+
+.boxing-date{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:.8rem;
+  font-weight:700;
+  letter-spacing:.2em;
+  text-transform:uppercase;
+  color:var(--red);
+  margin-bottom:.8rem;
+}
+
+.boxing-fighters{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:2.2rem;
+  letter-spacing:.04em;
+  margin-bottom:1rem;
+}
+
+.boxing-event{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:1.25rem;
+  font-weight:700;
+  margin-bottom:.6rem;
+}
+
+.boxing-location{
+  font-size:1rem;
+  color:var(--muted);
+  margin-bottom:1.2rem;
+}
+
+.boxing-meta{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  border-top:1px solid var(--border);
+  padding-top:1rem;
+}
+
+.boxing-time{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:1.2rem;
+  font-weight:700;
+}
+
+.boxing-timezone{
+  font-size:.85rem;
+  color:var(--muted);
+}
+
+.boxing-countdown{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:1.8rem;
+  color:var(--gold);
+}
+
+.state-box{
+  padding:3rem;
+  text-align:center;
+  color:var(--muted);
+  font-family:'Barlow Condensed',sans-serif;
+}
+
+@media(max-width:700px){
+  .boxing-meta{
+    flex-direction:column;
+    align-items:flex-start;
+    gap:.5rem;
+  }
+}
+</style>
 </head>
 <body>
-  <header>
-    <h1>Boxing Schedule</h1>
-    <p><a href="index.html" class="back">← Back to Home</a></p>
-  </header>
 
-  <div class="container">
-    <div class="note">
-      <strong>Note:</strong> Boxing lacks a reliable free public API for upcoming fights right now (most are paid/limited). This list is curated from major sources (CBS, ESPN, DAZN, BoxRec) as of Feb 2026. Update manually or ask AI for fresh HTML every few weeks!
-    </div>
+<header>
+  <div class="logo">Fight<span>Times</span></div>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="ufc.html">UFC</a>
+  </nav>
+</header>
 
-    <!-- Paste/update events here -->
-    <div class="event">
-      <div class="date">March 21, 2026</div>
-      <div class="title">Carlos Adames (c) vs. Austin Williams</div>
-      <div class="details">Orlando, FL • Title fight • Streaming TBA</div>
-    </div>
-    <div class="event">
-      <div class="date">March 28, 2026</div>
-      <div class="title">Sebastian Fundora (c) vs. Keith Thurman</div>
-      <div class="details">Las Vegas, NV • Welterweight/Super Welter • DAZN</div>
-    </div>
-    <div class="event">
-      <div class="date">April 4, 2026</div>
-      <div class="title">Deontay Wilder vs. Derek Chisora</div>
-      <div class="details">London, UK • Heavyweights • DAZN PPV</div>
-    </div>
-    <div class="event">
-      <div class="date">April 11, 2026</div>
-      <div class="title">Tyson Fury vs. Arslanbek Makhmudov</div>
-      <div class="details">TBA • Heavyweight • Netflix</div>
-    </div>
-    <!-- Add more as needed – copy/paste format -->
-
+<section class="page-section">
+  <div class="page-title">Boxing Schedule</div>
+  <div id="boxingList" class="boxing-list">
+    <div class="state-box">Loading Boxing fights...</div>
   </div>
+</section>
 
-  <footer>
-    © 2026 Fight Times • Boxing data curated from public sources • Update via edit & push
-  </footer>
+<script>
+// Helpers
+
+function formatDate(dateStr){
+  return new Date(dateStr).toLocaleDateString('en-GB',{
+    weekday:'long',
+    day:'numeric',
+    month:'long',
+    year:'numeric'
+  }).toUpperCase();
+}
+
+function formatTime(dateStr){
+  return new Date(dateStr).toLocaleTimeString('en-GB',{
+    hour:'2-digit',
+    minute:'2-digit'
+  });
+}
+
+function getTimezone(){
+  return Intl.DateTimeFormat().resolvedOptions().timeZone;
+}
+
+function startCountdown(element, dateStr){
+  function update(){
+    const diff = new Date(dateStr) - Date.now();
+
+    if(diff <= 0){
+      element.innerHTML = "● LIVE";
+      return;
+    }
+
+    const days = Math.floor(diff / 86400000);
+    const hours = Math.floor((diff % 86400000) / 3600000);
+    const minutes = Math.floor((diff % 3600000) / 60000);
+    const seconds = Math.floor((diff % 60000) / 1000);
+
+    element.innerHTML =
+      `${days}D ${hours.toString().padStart(2,'0')}H ` +
+      `${minutes.toString().padStart(2,'0')}M ` +
+      `${seconds.toString().padStart(2,'0')}S`;
+  }
+
+  update();
+  setInterval(update, 1000);
+}
+
+// Fetch Boxing Only
+
+async function fetchBoxing(){
+  const res = await fetch('/api/fights');
+  if(!res.ok) throw new Error("API Error");
+  const data = await res.json();
+  return (data.boxing || []);
+}
+
+// Render
+
+async function init(){
+  try{
+    const fights = await fetchBoxing();
+    const list = document.getElementById('boxingList');
+    list.innerHTML = '';
+
+    const now = new Date();
+    const upcoming = fights.filter(f => new Date(f.date) > now);
+
+    if(!upcoming.length){
+      list.innerHTML =
+        '<div class="state-box">No upcoming Boxing fights.</div>';
+      return;
+    }
+
+    upcoming
+      .sort((a,b)=>new Date(a.date)-new Date(b.date))
+      .forEach(f => {
+
+        const card = document.createElement('div');
+        card.className = 'boxing-card';
+
+        card.innerHTML = `
+          <div class="boxing-date">${formatDate(f.date)}</div>
+          <div class="boxing-fighters">${f.main_event}</div>
+          <div class="boxing-event">${f.event || 'Boxing Event'}</div>
+          <div class="boxing-location">${f.venue || 'Location TBA'}</div>
+
+          <div class="boxing-meta">
+            <div>
+              <div class="boxing-time">${formatTime(f.date)}</div>
+              <div class="boxing-timezone">${getTimezone()}</div>
+            </div>
+            <div class="boxing-countdown"></div>
+          </div>
+        `;
+
+        list.appendChild(card);
+
+        const countdownEl = card.querySelector('.boxing-countdown');
+        startCountdown(countdownEl, f.date);
+      });
+
+  }catch(err){
+    document.getElementById('boxingList').innerHTML =
+      '<div class="state-box">Error loading Boxing fights.</div>';
+  }
+}
+
+init();
+</script>
+
 </body>
 </html>
