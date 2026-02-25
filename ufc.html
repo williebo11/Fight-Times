@@ -88,15 +88,19 @@ nav a:hover{color:var(--text)}
   border:1px solid var(--border);
 }
 
-.ufc-card{
-  background:var(--surface);
-  padding:2rem 2.2rem;
-  position:relative;
-  transition:.25s;
+.ufc-card {
+  display: block;        /* ⬅ important for full card styling */
+  text-decoration: none; /* ⬅ remove underline */
+  color: inherit;        /* ⬅ use the same text colors as divs */
+  background: var(--surface);
+  padding: 2rem 2.2rem;
+  position: relative;
+  transition: .25s;
 }
 
-.ufc-card:hover{
-  background:var(--surface2);
+.ufc-card:hover {
+  background: var(--surface2);
+  color: var(--text); /* keep all text readable on hover */
 }
 
 .ufc-card::before{
