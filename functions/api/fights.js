@@ -2,7 +2,7 @@ export async function onRequestGet(context) {
   const RAPID_KEY    = context.env.RAPIDAPI_KEY;
   const APISPORTS_KEY = context.env.APISPORTS_KEY;
 
-  const MMA_API    = "https://v1.mma.api-sports.io/events?next=10";
+  const MMA_API = "https://v1.mma.api-sports.io/fights?next=10";
   const BOXING_API = "https://boxing-data-api.p.rapidapi.com/v1/events/schedule?days=7";
 
   async function safeFetch(url, options = {}, timeoutMs = 8000) {
