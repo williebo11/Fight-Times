@@ -33,7 +33,6 @@ body {
   scroll-behavior: smooth;
 }
 
-/* HEADER */
 header {
   padding: 4rem 2rem 2rem;
   text-align:center;
@@ -53,7 +52,6 @@ h1 {
   font-size:1.2rem;
 }
 
-/* FEATURED SECTION */
 .featured {
   padding: 3rem 1rem 4rem;
   text-align:center;
@@ -108,6 +106,7 @@ h1 {
   border-radius:50%;
   border:3px solid var(--accent);
   transition:0.3s ease;
+  background: #1a1a2e;
 }
 
 .fighters img:hover {
@@ -139,15 +138,8 @@ h1 {
   margin-bottom:1rem;
 }
 
-.badge-live {
-  background:#ff3b3b;
-  color:white;
-}
-
-.badge-upcoming {
-  background:#ffdd57;
-  color:black;
-}
+.badge-live { background:#ff3b3b; color:white; }
+.badge-upcoming { background:#ffdd57; color:black; }
 
 .countdown {
   font-size:1.8rem;
@@ -184,9 +176,7 @@ h1 {
   color:#ffdd57;
 }
 
-.date-group {
-  margin-top:1rem;
-}
+.date-group { margin-top:1rem; }
 
 .date-group h4 {
   font-size:1rem;
@@ -200,9 +190,7 @@ h1 {
   font-size:0.95rem;
 }
 
-.mini-fight:last-child {
-  border:none;
-}
+.mini-fight:last-child { border:none; }
 
 .live {
   color:#ff3b3b;
@@ -215,7 +203,32 @@ h1 {
   100% { opacity:1; }
 }
 
-/* CARDS */
+.api-error {
+  background: rgba(230,57,70,0.1);
+  border: 1px solid rgba(230,57,70,0.3);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-top: 1rem;
+  font-size: 0.9rem;
+  color: #ff9aa2;
+}
+
+.loading-spinner {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(230,57,70,0.3);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
 .cards {
   display:grid;
   grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
@@ -247,9 +260,7 @@ h1 {
   filter:brightness(0.8);
 }
 
-.card-body {
-  padding:2rem;
-}
+.card-body { padding:2rem; }
 
 .card h2 {
   font-size:2rem;
@@ -284,7 +295,6 @@ footer {
   border-top:1px solid var(--border);
 }
 
-/* Scroll animations */
 [data-animate] {
   opacity:0;
   transform: translateY(20px);
@@ -310,12 +320,14 @@ footer {
 
   <div class="featured-card" data-animate="fade">
     <div class="fighters">
-      <img id="fighter1" src="UFC-bg.jpg">
+      <img id="fighter1" src="UFC-bg.jpg" onerror="this.src='https://via.placeholder.com/150x150/1a1a2e/e63946?text=Fighter+1'">
       <div class="vs">VS</div>
-      <img id="fighter2" src="UFC-bg.jpg">
+      <img id="fighter2" src="UFC-bg.jpg" onerror="this.src='https://via.placeholder.com/150x150/1a1a2e/e63946?text=Fighter+2'">
     </div>
 
-    <div class="event-title" id="eventTitle">Loading event...</div>
+    <div class="event-title" id="eventTitle">
+      <span class="loading-spinner"></span> Loading event...
+    </div>
     <div class="event-date" id="eventDate"></div>
     <div id="statusBadge" class="status-badge"></div>
 
@@ -324,8 +336,10 @@ footer {
 
     <div class="upcoming-list">
       <h3>Next 7 Days</h3>
-      <div id="nextFights"></div>
+      <div id="nextFights"><span class="loading-spinner"></span> Fetching fights...</div>
     </div>
+
+    <div id="apiErrors"></div>
   </div>
 </section>
 
@@ -352,199 +366,202 @@ footer {
 </div>
 
 <footer>
-© 2026 Fight Times • Powered by Cloudflare Pages
+  © 2026 Fight Times • Powered by Cloudflare Pages
 </footer>
 
 <script>
-// Config
-const UFC_API_KEY = "dd182ebd-221a-4ccf-a649-02806c1ce388";
-const BOXING_API_KEY = "ecb9ddf1b3msh9a639108aea55e9p19af3fjsn3f3aedde51b9";
-const DAYS_AHEAD = 14; // Show fights in the next 14 days
-
-// Helpers
-function isWithinDays(dateStr, days) {
-  const now = new Date();
-  const d = new Date(dateStr);
-  const diff = (d - now) / (1000*60*60*24);
-  return diff >= -1 && diff <= days;
+// ─── API FETCH (via Cloudflare Worker — no CORS issues) ──────────────────────
+async function fetchUFCEvents() {
+  return []; // data comes from fetchAllFights()
 }
 
-function getStatus(dateStr){
-  const now = new Date();
-  const d = new Date(dateStr);
-  const diff = d - now;
-  if(diff <=0 && diff > -86400000) return "LIVE";
-  if(diff <= 86400000) return "TOMORROW";
+async function fetchBoxingEvents() {
+  return []; // data comes from fetchAllFights()
+}
+
+async function fetchAllFights() {
+  try {
+    const res = await fetch("/api/fights");
+
+    if (!res.ok) {
+      throw new Error(`Worker responded with status ${res.status}: ${res.statusText}`);
+    }
+
+    const data = await res.json();
+
+    // ── Normalize UFC events ──
+    const rawUFC = data.ufc?.data || data.ufc?.events || data.ufc || [];
+    const ufcEvents = (Array.isArray(rawUFC) ? rawUFC : []).map(e => ({
+      dateEvent:     e.date || e.event_date || e.start_date || "",
+      strEvent:      e.name || `${e.fighter1 ?? "TBA"} vs ${e.fighter2 ?? "TBA"}`,
+      type:          "UFC",
+      fighter1Thumb: e.fighter1_image || e.image || null,
+      fighter2Thumb: e.fighter2_image || e.image || null,
+    })).filter(e => e.dateEvent);
+
+    // ── Normalize Boxing fights ──
+    const rawBoxing = data.boxing?.fights || data.boxing?.data || data.boxing || [];
+    const boxingEvents = (Array.isArray(rawBoxing) ? rawBoxing : []).map(f => ({
+      dateEvent:     f.date || f.fight_date || f.event_date || "",
+      strEvent:      f.title || `${f.boxer1 ?? f.fighter1 ?? "TBA"} vs ${f.boxer2 ?? f.fighter2 ?? "TBA"}`,
+      type:          "Boxing",
+      fighter1Thumb: f.boxer1_image || f.fighter1_image || null,
+      fighter2Thumb: f.boxer2_image || f.fighter2_image || null,
+    })).filter(f => f.dateEvent);
+
+    return { ufcEvents, boxingEvents };
+
+  } catch (err) {
+    console.error("fetchAllFights error:", err);
+    showApiError("API", err.message);
+    return { ufcEvents: [], boxingEvents: [] };
+  }
+}
+
+// ─── HELPERS ─────────────────────────────────────────────────────────────────
+function showApiError(source, message) {
+  const container = document.getElementById("apiErrors");
+  if (!container) return;
+  const div = document.createElement("div");
+  div.className = "api-error";
+  div.innerHTML = `⚠️ <strong>${source} API:</strong> ${message}`;
+  container.appendChild(div);
+}
+
+function isWithin7Days(dateStr) {
+  const today     = new Date();
+  const eventDate = new Date(dateStr);
+  const diff      = (eventDate - today) / (1000 * 60 * 60 * 24);
+  return diff >= -1 && diff <= 7;
+}
+
+function getStatus(dateStr) {
+  const now   = new Date();
+  const event = new Date(dateStr);
+  const diff  = event - now;
+  if (diff <= 0 && diff > -86400000) return "LIVE";
+  if (diff <= 86400000 && diff > 0)  return "TOMORROW";
   return "UPCOMING";
 }
 
-function formatCountdown(dateStr){
+function createCountdownString(dateStr) {
   const target = new Date(dateStr);
-  const now = new Date();
-  const diff = target - now;
-  if(diff <=0) return "LIVE NOW";
-  const d = Math.floor(diff/(1000*60*60*24));
-  const h = Math.floor((diff/(1000*60*60))%24);
-  const m = Math.floor((diff/(1000*60))%60);
-  const s = Math.floor((diff/1000)%60);
+  const diff   = target - new Date();
+  if (diff <= 0) return "LIVE NOW";
+  const d = Math.floor(diff / (1000 * 60 * 60 * 24));
+  const h = Math.floor((diff / (1000 * 60 * 60)) % 24);
+  const m = Math.floor((diff / (1000 * 60)) % 60);
+  const s = Math.floor((diff / 1000) % 60);
   return `${d}d ${h}h ${m}m ${s}s`;
 }
 
-// Countdown + progress bar
-function startCountdownProgress(dateStr){
-  const el = document.getElementById("countdown");
-  const fill = document.getElementById("progressFill");
-  const target = new Date(dateStr);
+function startCountdownProgress(dateStr) {
+  const el    = document.getElementById("countdown");
+  const fill  = document.getElementById("progressFill");
   const start = new Date();
+  const target= new Date(dateStr);
 
-  function update(){
-    const now = new Date();
-    const diff = target-now;
-    if(diff<=0){
-      el.innerText="LIVE NOW";
+  function update() {
+    const now  = new Date();
+    const diff = target - now;
+    if (diff <= 0) {
+      el.textContent = "LIVE NOW";
       el.classList.add("live");
-      fill.style.width="100%";
+      fill.style.width = "100%";
       return;
     }
-    const total = target-start;
-    const progress = Math.min(100, ((total-diff)/total)*100);
-    fill.style.width=`${progress}%`;
-    el.innerText=formatCountdown(dateStr);
+    const total    = target - start;
+    const progress = Math.min(100, ((total - diff) / total) * 100);
+    fill.style.width    = `${progress}%`;
+    el.textContent = createCountdownString(dateStr);
   }
+
   update();
-  setInterval(update,1000);
+  setInterval(update, 1000);
 }
 
-// Fetch UFC events
-async function fetchUFCEvents(){
-  try{
-    const res = await fetch("https://api.balldontlie.io/mma/v1/events?per_page=100", {
-      headers:{ "Authorization": UFC_API_KEY }
-    });
-    const data = await res.json();
-    return data.data || [];
-  } catch(err){
-    console.error("UFC fetch error:",err);
-    return [];
-  }
-}
+// ─── MAIN LOADER ──────────────────────────────────────────────────────────────
+async function loadFeatured() {
+  const { ufcEvents, boxingEvents } = await fetchAllFights();
 
-// Fetch UFC fights for an event
-async function fetchUFCFights(eventId){
-  try{
-    const res = await fetch(`https://api.balldontlie.io/mma/v1/fights?event_ids[]=${eventId}`, {
-      headers:{ "Authorization": UFC_API_KEY }
-    });
-    const data = await res.json();
-    return data.data || [];
-  } catch(err){
-    console.error("UFC fights error:",err);
-    return [];
-  }
-}
+  // Merge, filter to this week, sort ascending
+  const allEvents = [...ufcEvents, ...boxingEvents]
+    .filter(e => isWithin7Days(e.dateEvent))
+    .sort((a, b) => new Date(a.dateEvent) - new Date(b.dateEvent));
 
-// Fetch Boxing fights
-async function fetchBoxingFights(){
-  try{
-    const res = await fetch("https://boxing-data-api.p.rapidapi.com/v1/fights/schedule", {
-      headers:{
-        "X-RapidAPI-Key": BOXING_API_KEY,
-        "X-RapidAPI-Host": "boxing-data-api.p.rapidapi.com"
-      }
-    });
-    const data = await res.json();
-    return data || [];
-  } catch(err){
-    console.error("Boxing fetch error:",err);
-    return [];
-  }
-}
+  const titleEl = document.getElementById("eventTitle");
 
-// Load featured & upcoming
-async function loadFeatured(){
-  const [ufcEvents, boxingFights] = await Promise.all([fetchUFCEvents(), fetchBoxingFights()]);
-
-  // Build UFC fights array
-  const ufcFights = [];
-  for(let ev of ufcEvents){
-    if(!ev.date) continue;
-    const fights = await fetchUFCFights(ev.id);
-    fights.forEach(f=>{
-      ufcFights.push({
-        dateEvent: ev.date,
-        strEvent:`${f.fighter1.name} vs ${f.fighter2.name}`,
-        type:"UFC"
-      });
-    });
-  }
-
-  // Boxing array
-  const boxingList = boxingFights.map(f=>({
-    dateEvent:f.date,
-    strEvent:`${f.fighters.fighter_1.full_name} vs ${f.fighters.fighter_2.full_name}`,
-    type:"Boxing"
-  }));
-
-  // Combine and filter
-  const allEvents = [...ufcFights, ...boxingList]
-    .filter(e=>isWithinDays(e.dateEvent,DAYS_AHEAD))
-    .sort((a,b)=>new Date(a.dateEvent)-new Date(b.dateEvent));
-
-  if(!allEvents.length){
-    document.getElementById("eventTitle").innerText="No upcoming fights this week";
-    document.getElementById("eventDate").innerText="";
-    document.getElementById("statusBadge").innerText="";
-    document.getElementById("countdown").innerText="";
-    document.getElementById("progressFill").style.width="0%";
+  if (!allEvents.length) {
+    titleEl.textContent = "No events found in the next 7 days";
+    document.getElementById("nextFights").textContent = "Check back soon.";
     return;
   }
 
   const main = allEvents[0];
-  document.getElementById("eventTitle").innerText=main.strEvent;
-  document.getElementById("eventDate").innerText=new Date(main.dateEvent).toDateString();
-  const status = getStatus(main.dateEvent);
-  const badge = document.getElementById("statusBadge");
-  badge.innerText=status;
-  badge.className=`status-badge ${status==="LIVE"?"badge-live":"badge-upcoming"}`;
+
+  // ── Featured card ──
+  titleEl.textContent = main.strEvent;
+  document.getElementById("eventDate").textContent = new Date(main.dateEvent).toDateString();
+
+  const badge   = document.getElementById("statusBadge");
+  const status  = getStatus(main.dateEvent);
+  badge.textContent = status;
+  badge.className   = `status-badge ${status === "LIVE" ? "badge-live" : "badge-upcoming"}`;
+
+  // Fighter images (fallback to placeholder if null)
+  const placeholder = "https://via.placeholder.com/150x150/1a1a2e/e63946?text=Fighter";
+  document.getElementById("fighter1").src = main.fighter1Thumb || placeholder;
+  document.getElementById("fighter2").src = main.fighter2Thumb || placeholder;
 
   startCountdownProgress(main.dateEvent);
 
-  // Upcoming fights grouped
-  const listEl = document.getElementById("nextFights");
-  listEl.innerHTML="";
+  // ── Upcoming list grouped by date ──
+  const listEl  = document.getElementById("nextFights");
+  listEl.innerHTML = "";
+
   const grouped = {};
-  allEvents.forEach(e=>{
-    const d = new Date(e.dateEvent).toDateString();
-    if(!grouped[d]) grouped[d]=[];
-    grouped[d].push(e);
+  allEvents.forEach(e => {
+    const key = new Date(e.dateEvent).toDateString();
+    if (!grouped[key]) grouped[key] = [];
+    grouped[key].push(e);
   });
 
-  Object.keys(grouped).forEach(date=>{
-    const groupDiv = document.createElement("div");
-    groupDiv.className="date-group";
+  Object.entries(grouped).forEach(([date, fights]) => {
+    const group = document.createElement("div");
+    group.className = "date-group";
+
     const h4 = document.createElement("h4");
-    h4.innerText=date;
-    groupDiv.appendChild(h4);
-    grouped[date].forEach(f=>{
+    h4.textContent = date;
+    group.appendChild(h4);
+
+    fights.forEach(f => {
       const div = document.createElement("div");
-      div.className="mini-fight";
-      div.innerText=`${f.strEvent} • ${f.type} • ${getStatus(f.dateEvent)}`;
-      groupDiv.appendChild(div);
+      div.className = "mini-fight";
+      const s = getStatus(f.dateEvent);
+      div.innerHTML = `
+        ${f.strEvent}
+        <span style="color:var(--text-muted)"> • ${f.type}</span>
+        <span class="${s === 'LIVE' ? 'live' : ''}" style="margin-left:6px;font-size:0.8rem;font-weight:600;">
+          ${s === 'LIVE' ? '● LIVE' : s}
+        </span>`;
+      group.appendChild(div);
     });
-    listEl.appendChild(groupDiv);
+
+    listEl.appendChild(group);
   });
 }
 
-// Initialize
-loadFeatured();
-
-// Scroll animations
-const observer = new IntersectionObserver(entries=>{
-  entries.forEach(entry=>{
-    if(entry.isIntersecting) entry.target.classList.add('visible');
+// ─── SCROLL ANIMATIONS ────────────────────────────────────────────────────────
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) entry.target.classList.add("visible");
   });
-},{threshold:0.2});
-document.querySelectorAll('[data-animate]').forEach(el=>observer.observe(el));
+}, { threshold: 0.2 });
+
+document.querySelectorAll("[data-animate]").forEach(el => observer.observe(el));
+
+// ─── BOOT ─────────────────────────────────────────────────────────────────────
+loadFeatured();
 </script>
 
 </body>
