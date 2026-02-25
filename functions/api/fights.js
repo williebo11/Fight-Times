@@ -1,12 +1,14 @@
 export async function onRequestGet(context) {
   const RAPID_KEY = context.env.RAPIDAPI_KEY;
 
+  // ✅ NEW: Tapology API — org IDs 16=UFC, 69=Bellator, 78=PFL
   const MMA_API =
-    "https://mmaapi.p.rapidapi.com/api/mma/unique-tournament/19906/tournament/114389/mma-events/all";
+    "https://unofficial-tapology-api.p.rapidapi.com/api/schedule/events/16,69,78?fields=organization%2Cmain_event%2Cweight_class%2Cdatetime%2Ccity%2Csubregion%2Cbroadcast%2Ctitle_bout_desc%2Cfight_card";
+
+  // 🥊 Boxing — unchanged
   const BOXING_API =
     "https://boxing-data-api.p.rapidapi.com/v1/events/schedule?days=7";
 
-  // Wraps any fetch with a timeout — returns null if it times out or errors
   async function safeFetch(url, options, timeoutMs = 8000) {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), timeoutMs);
@@ -26,9 +28,8 @@ export async function onRequestGet(context) {
     "X-RapidAPI-Host": host,
   });
 
-  // Fire both requests in parallel, neither can hang forever
   const [mmaRes, boxingRes] = await Promise.all([
-    safeFetch(MMA_API, { headers: headers("mmaapi.p.rapidapi.com") }),
+    safeFetch(MMA_API, { headers: headers("unofficial-tapology-api.p.rapidapi.com") }),
     safeFetch(BOXING_API, { headers: headers("boxing-data-api.p.rapidapi.com") }),
   ]);
 
@@ -37,6 +38,7 @@ export async function onRequestGet(context) {
   if (mmaRes && mmaRes.ok) {
     try {
       const mmaData = await mmaRes.json();
+      // Tapology returns { events: [...] } or an array directly
       mmaEvents = mmaData?.events || mmaData?.data || mmaData || [];
     } catch (e) {
       console.warn("MMA JSON parse failed:", e.message);
