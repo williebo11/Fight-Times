@@ -17,42 +17,28 @@ export async function onRequestGet(context) {
     }
   }
 
-  const dates = Array.from({ length: 7 }, (_, i) => {
-    const d = new Date();
-    d.setDate(d.getDate() + i);
-    return d.toISOString().split('T')[0];
-  });
+  // Just test ONE date first to confirm the endpoint + key work
+  const today = new Date().toISOString().split('T')[0];
 
-  const sportradarHeaders = {
-    "x-api-key": SPORTRADAR_KEY,
-    "accept": "application/json",
-  };
-
-  const [boxingRes, ...mmaResponses] = await Promise.all([
+  const [boxingRes, mmaRes] = await Promise.all([
     safeFetch(BOXING_API, {
       headers: {
         "X-RapidAPI-Key":  RAPID_KEY,
         "X-RapidAPI-Host": "boxing-data-api.p.rapidapi.com",
       },
     }),
-    ...dates.map(date =>
-      safeFetch(
-        `https://api.sportradar.com/mma/trial/v2/en/schedules/${date}/schedule.json`,
-        { headers: sportradarHeaders }
-      )
+    safeFetch(
+      `https://api.sportradar.com/mma/trial/v2/en/schedules/${today}/schedule.json`,
+      { headers: { "x-api-key": SPORTRADAR_KEY, "accept": "application/json" } }
     ),
   ]);
 
-  // Read raw SportRadar responses for debug
-  const mmaDebug = await Promise.all(
-    mmaResponses.map(async (res, i) => {
-      if (!res) return { date: dates[i], status: null, error: "no response" };
-      const text = await res.text();
-      let data;
-      try { data = JSON.parse(text); } catch(e) { data = text; }
-      return { date: dates[i], status: res.status, data };
-    })
-  );
+  // Read MMA raw
+  let mmaRaw = null;
+  if (mmaRes) {
+    const text = await mmaRes.text();
+    try { mmaRaw = JSON.parse(text); } catch(e) { mmaRaw = text; }
+  }
 
   // Boxing
   let boxingData = [];
@@ -62,9 +48,9 @@ export async function onRequestGet(context) {
 
   return new Response(
     JSON.stringify({
-      ufc: [],          // keeps frontend working
+      ufc: [],
       boxing: boxingData,
-      _debug: mmaDebug, // SportRadar raw — check /api/fights to see this
+      _debug: { date: today, status: mmaRes?.status, data: mmaRaw },
     }, null, 2),
     { headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" } }
   );
