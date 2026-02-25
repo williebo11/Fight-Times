@@ -24,7 +24,7 @@ export async function onRequestGet(context) {
   const day   = String(now.getDate()).padStart(2, '0');
 
   // Correct URL format: summaries.json with api_key as query param
-  const MMA_URL = `https://api.sportradar.com/mma/trial/v2/en/competitions.json?api_key=${SPORTRADAR_KEY}`;
+ const MMA_URL = `https://api.sportradar.com/mma/trial/v2/en/competitions/sr:competition:50052/schedule.json?api_key=${SPORTRADAR_KEY}`;
 
   const [boxingRes, mmaRes] = await Promise.all([
     safeFetch(BOXING_API, {
