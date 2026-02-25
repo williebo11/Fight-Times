@@ -335,7 +335,7 @@ footer {
     <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
 
     <div class="upcoming-list">
-      <h3>Next 7 Days</h3>
+      <h3>Upcoming Events</h3>
       <div id="nextFights"><span class="loading-spinner"></span> Fetching fights...</div>
     </div>
 
@@ -389,25 +389,22 @@ async function fetchAllFights() {
 
     const data = await res.json();
 
-    // ── Normalize UFC events ──
-    const rawUFC = data.ufc?.data || data.ufc?.events || data.ufc || [];
-    const ufcEvents = (Array.isArray(rawUFC) ? rawUFC : []).map(e => ({
-      dateEvent:     e.date || e.event_date || e.start_date || "",
-      strEvent:      e.name || `${e.fighter1 ?? "TBA"} vs ${e.fighter2 ?? "TBA"}`,
-      type:          "UFC",
-      fighter1Thumb: e.fighter1_image || e.image || null,
-      fighter2Thumb: e.fighter2_image || e.image || null,
-    })).filter(e => e.dateEvent);
+    // Normalize UFC/MMA events (actual structure: data.ufc.data[])
+    const rawUFC = data.ufc?.data || [];
+    const nowTime = new Date();
+    const ufcEvents = (Array.isArray(rawUFC) ? rawUFC : [])
+      .filter(e => e.date && new Date(e.date) > nowTime)
+      .map(e => ({
+        dateEvent:     e.date,
+        strEvent:      e.short_name || e.name || "TBA",
+        type:          e.league?.abbreviation || "MMA",
+        venue:         [e.venue_city, e.venue_country].filter(Boolean).join(", "),
+        fighter1Thumb: null,
+        fighter2Thumb: null,
+      }));
 
-    // ── Normalize Boxing fights ──
-    const rawBoxing = data.boxing?.fights || data.boxing?.data || data.boxing || [];
-    const boxingEvents = (Array.isArray(rawBoxing) ? rawBoxing : []).map(f => ({
-      dateEvent:     f.date || f.fight_date || f.event_date || "",
-      strEvent:      f.title || `${f.boxer1 ?? f.fighter1 ?? "TBA"} vs ${f.boxer2 ?? f.fighter2 ?? "TBA"}`,
-      type:          "Boxing",
-      fighter1Thumb: f.boxer1_image || f.fighter1_image || null,
-      fighter2Thumb: f.boxer2_image || f.fighter2_image || null,
-    })).filter(f => f.dateEvent);
+    // Boxing API currently unavailable
+    const boxingEvents = [];
 
     return { ufcEvents, boxingEvents };
 
@@ -432,7 +429,7 @@ function isWithin7Days(dateStr) {
   const today     = new Date();
   const eventDate = new Date(dateStr);
   const diff      = (eventDate - today) / (1000 * 60 * 60 * 24);
-  return diff >= -1 && diff <= 7;
+  return diff >= -1 && diff <= 30; // show next 30 days
 }
 
 function getStatus(dateStr) {
