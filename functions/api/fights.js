@@ -1,43 +1,67 @@
 export async function onRequestGet(context) {
   try {
-    const UFC_API = "https://api.balldontlie.io/mma/v1/events";
+    const RAPID_KEY = context.env.RAPIDAPI_KEY;
+
+    // 🔥 MMA (UFC tournament)
+    const MMA_API =
+      "https://mmaapi.p.rapidapi.com/api/mma/unique-tournament/19906/tournament/114389/mma-events/all";
+
+    // 🥊 Boxing
     const BOXING_API =
       "https://boxing-data-api.p.rapidapi.com/v1/events/schedule?days=30";
 
-    const [ufcRes, boxingRes] = await Promise.all([
-      fetch(UFC_API, {
+    const [mmaRes, boxingRes] = await Promise.all([
+      fetch(MMA_API, {
         headers: {
-          Authorization: `Bearer ${context.env.UFC_API_KEY}`,
+          "X-RapidAPI-Key": RAPID_KEY,
+          "X-RapidAPI-Host": "mmaapi.p.rapidapi.com",
         },
       }),
+
       fetch(BOXING_API, {
         headers: {
-          "X-RapidAPI-Key": context.env.RAPIDAPI_KEY,
+          "X-RapidAPI-Key": RAPID_KEY,
           "X-RapidAPI-Host": "boxing-data-api.p.rapidapi.com",
         },
       }),
     ]);
 
-    // Check for failed responses BEFORE parsing JSON
-    if (!ufcRes.ok) {
-      const text = await ufcRes.text();
-      throw new Error(`UFC API Error ${ufcRes.status}: ${text}`);
+    if (!mmaRes.ok) {
+      const text = await mmaRes.text();
+      throw new Error(`MMA API ${mmaRes.status}: ${text}`);
     }
 
     if (!boxingRes.ok) {
       const text = await boxingRes.text();
-      throw new Error(`Boxing API Error ${boxingRes.status}: ${text}`);
+      throw new Error(`Boxing API ${boxingRes.status}: ${text}`);
     }
 
-    const ufc = await ufcRes.json();
-    const boxing = await boxingRes.json();
+    const mmaData = await mmaRes.json();
+    const boxingData = await boxingRes.json();
 
-    return new Response(JSON.stringify({ ufc, boxing }), {
-      headers: { "Content-Type": "application/json" },
-    });
+    // 🔥 Extract MMA events safely
+    const mmaEvents =
+      mmaData?.events ||
+      mmaData?.data ||
+      mmaData ||
+      [];
+
+    return new Response(
+      JSON.stringify({
+        ufc: mmaEvents,
+        boxing: boxingData,
+      }),
+      {
+        headers: {
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*",
+        },
+      }
+    );
   } catch (err) {
-    return new Response(JSON.stringify({ error: err.message }), {
-      status: 500,
-    });
+    return new Response(
+      JSON.stringify({ error: err.message }),
+      { status: 500 }
+    );
   }
 }
