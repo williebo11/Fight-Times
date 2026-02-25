@@ -335,7 +335,7 @@ footer {
     <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
 
     <div class="upcoming-list">
-      <h3>Upcoming Events</h3>
+      <h3>Next 7 Days</h3>
       <div id="nextFights"><span class="loading-spinner"></span> Fetching fights...</div>
     </div>
 
@@ -389,34 +389,47 @@ async function fetchAllFights() {
 
     const data = await res.json();
 
-    // Normalize UFC/MMA events
-    const rawUFC = data.ufc?.data || [];
-    const nowTime = new Date();
-    const ufcEvents = (Array.isArray(rawUFC) ? rawUFC : [])
-      .filter(e => e.date && new Date(e.date) > nowTime && e.status !== "completed")
-      .sort((a, b) => new Date(a.date) - new Date(b.date))
-      .map(e => ({
-        dateEvent:     e.date,
-        strEvent:      e.short_name || e.name || "TBA",
-        type:          e.league?.abbreviation || "MMA",
-        venue:         [e.venue_city, e.venue_country].filter(Boolean).join(", "),
-        fighter1Thumb: null,
-        fighter2Thumb: null,
-      }));
+    // ── Normalize UFC events ──
+    const rawUFC = data.ufc?.data || data.ufc?.events || data.ufc || [];
+    const ufcEvents = (Array.isArray(rawUFC) ? rawUFC : []).map(e => ({
+      dateEvent:     e.date || e.event_date || e.start_date || "",
+      strEvent:      e.name || `${e.fighter1 ?? "TBA"} vs ${e.fighter2 ?? "TBA"}`,
+      type:          "UFC",
+      fighter1Thumb: e.fighter1_image || e.image || null,
+      fighter2Thumb: e.fighter2_image || e.image || null,
+    })).filter(e => e.dateEvent);
 
-    // Normalize Boxing events (direct array with title, date, location, poster_image_url)
-    const rawBoxing = Array.isArray(data.boxing) ? data.boxing : (data.boxing?.data || []);
-    const boxingEvents = rawBoxing
-      .filter(b => b.date && new Date(b.date) > nowTime)
-      .sort((a, b) => new Date(a.date) - new Date(b.date))
-      .map(b => ({
-        dateEvent:     b.date,
-        strEvent:      b.title || "TBA",
-        type:          "Boxing",
-        venue:         b.venue ? `${b.venue}, ${b.location}` : b.location || "",
-        fighter1Thumb: b.poster_image_url || null,
-        fighter2Thumb: b.poster_image_url || null,
-      }));
+    // ── Normalize Boxing fights ──
+// ── Normalize Boxing fights ──
+const rawBoxing = Array.isArray(data.boxing)
+  ? data.boxing
+  : Array.isArray(data.boxing?.data)
+    ? data.boxing.data
+    : Array.isArray(data.boxing?.fights)
+      ? data.boxing.fights
+      : [];
+
+const boxingEvents = rawBoxing.map(f => ({
+  dateEvent: f.date || f.fight_date || f.event_date || f.start_date || "",
+  strEvent:
+    f.title ||
+    `${f.boxer1?.name || f.fighter1?.name || f.boxer1 || f.fighter1 || "TBA"} vs ${
+      f.boxer2?.name || f.fighter2?.name || f.boxer2 || f.fighter2 || "TBA"
+    }`,
+  type: "Boxing",
+  fighter1Thumb:
+    f.boxer1?.image ||
+    f.fighter1?.image ||
+    f.boxer1_image ||
+    f.fighter1_image ||
+    null,
+  fighter2Thumb:
+    f.boxer2?.image ||
+    f.fighter2?.image ||
+    f.boxer2_image ||
+    f.fighter2_image ||
+    null,
+})).filter(f => f.dateEvent);
 
     return { ufcEvents, boxingEvents };
 
@@ -441,7 +454,7 @@ function isWithin7Days(dateStr) {
   const today     = new Date();
   const eventDate = new Date(dateStr);
   const diff      = (eventDate - today) / (1000 * 60 * 60 * 24);
-  return diff >= -1 && diff <= 30; // show next 30 days
+  return diff >= -1 && diff <= 7;
 }
 
 function getStatus(dateStr) {
@@ -495,12 +508,13 @@ async function loadFeatured() {
 
   // Merge, filter to this week, sort ascending
   const allEvents = [...ufcEvents, ...boxingEvents]
+    .filter(e => isWithin7Days(e.dateEvent))
     .sort((a, b) => new Date(a.dateEvent) - new Date(b.dateEvent));
 
   const titleEl = document.getElementById("eventTitle");
 
   if (!allEvents.length) {
-    titleEl.textContent = "No upcoming events found";
+    titleEl.textContent = "No events found in the next 7 days";
     document.getElementById("nextFights").textContent = "Check back soon.";
     return;
   }
