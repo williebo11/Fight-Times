@@ -6,24 +6,23 @@
 <title>Fight Times – UFC & Boxing Schedules</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:ital,wght@0,400;0,600;0,700;0,900;1,700&family=Barlow:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;900&family=Barlow:wght@400;500&display=swap" rel="stylesheet">
 
 <style>
 :root {
-  --bg: #080808;
-  --surface: #111;
-  --surface2: #1a1a1a;
-  --red: #e8003d;
-  --red-glow: rgba(232,0,61,0.35);
-  --gold: #f5c842;
-  --text: #f0f0f0;
-  --muted: #888;
-  --border: rgba(255,255,255,0.07);
+  --bg:       #080808;
+  --surface:  #101010;
+  --surface2: #181818;
+  --red:      #e8003d;
+  --red-dim:  rgba(232,0,61,0.15);
+  --gold:     #f5c518;
+  --text:     #f0f0f0;
+  --muted:    #666;
+  --border:   rgba(255,255,255,0.06);
 }
 
 *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
-
-html { scroll-behavior: smooth; }
+html { scroll-behavior:smooth; }
 
 body {
   font-family: 'Barlow', sans-serif;
@@ -33,637 +32,379 @@ body {
   overflow-x: hidden;
 }
 
-/* ─── NOISE GRAIN ─────────────────────────────────────────────────────────── */
-body::after {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
-  pointer-events: none;
-  z-index: 9999;
-  opacity: 0.4;
+body::before {
+  content:'';
+  position:fixed; inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+  pointer-events:none; z-index:9999; opacity:.5;
 }
 
-/* ─── HEADER ──────────────────────────────────────────────────────────────── */
+/* HEADER */
 header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 1.5rem 3rem;
-  border-bottom: 1px solid var(--border);
-  position: sticky;
-  top: 0;
-  background: rgba(8,8,8,0.92);
-  backdrop-filter: blur(12px);
-  z-index: 100;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:1.4rem 3rem;
+  border-bottom:1px solid var(--border);
+  position:sticky; top:0;
+  background:rgba(8,8,8,0.94);
+  backdrop-filter:blur(14px);
+  z-index:100;
 }
 
-.logo {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 2rem;
-  letter-spacing: 0.08em;
-  color: var(--text);
-}
+.logo { font-family:'Bebas Neue',sans-serif; font-size:1.9rem; letter-spacing:0.1em; color:var(--text); }
+.logo span { color:var(--red); }
 
-.logo span { color: var(--red); }
-
-nav { display: flex; gap: 2.5rem; }
-
+nav { display:flex; gap:2.5rem; align-items:center; }
 nav a {
-  font-family: 'Barlow Condensed', sans-serif;
-  font-weight: 600;
-  font-size: 0.95rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--muted);
-  text-decoration: none;
-  transition: color 0.2s;
+  font-family:'Barlow Condensed',sans-serif;
+  font-weight:700; font-size:0.85rem;
+  letter-spacing:0.18em; text-transform:uppercase;
+  color:var(--muted); text-decoration:none;
+  transition:color .2s;
+}
+nav a:hover { color:var(--text); }
+
+/* HERO SECTION */
+.hero-section { padding:3rem 3rem 0; max-width:1400px; margin:0 auto; }
+
+.hero-label {
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:0.75rem; font-weight:700;
+  letter-spacing:0.28em; text-transform:uppercase;
+  color:var(--red);
+  display:flex; align-items:center; gap:.6rem;
+  margin-bottom:1.5rem;
 }
 
-nav a:hover { color: var(--text); }
+.hero-label .pulse {
+  width:7px; height:7px; border-radius:50%;
+  background:var(--red);
+  animation: blink 1.3s ease-in-out infinite;
+}
 
-/* ─── HERO ────────────────────────────────────────────────────────────────── */
-.hero {
-  position: relative;
-  min-height: 92vh;
+@keyframes blink {
+  0%,100% { opacity:1; transform:scale(1); }
+  50%      { opacity:.4; transform:scale(1.7); }
+}
+
+.hero-cards {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  overflow: hidden;
-}
-
-.hero-bg {
-  position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(ellipse 60% 80% at 20% 50%, rgba(232,0,61,0.12), transparent),
-    radial-gradient(ellipse 50% 70% at 80% 50%, rgba(232,0,61,0.06), transparent);
-}
-
-/* Diagonal split line */
-.hero::after {
-  content: '';
-  position: absolute;
-  top: 0; bottom: 0;
-  left: 50%;
-  width: 2px;
-  background: linear-gradient(to bottom, transparent, var(--red), transparent);
-  transform: skewX(-3deg);
-  z-index: 2;
-}
-
-.hero-left {
-  position: relative;
-  z-index: 3;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  padding: 5rem 4rem 5rem 5rem;
-}
-
-.hero-right {
-  position: relative;
-  z-index: 3;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: flex-end;
-  padding: 5rem 5rem 5rem 4rem;
-  text-align: right;
-}
-
-.fight-label {
-  font-family: 'Barlow Condensed', sans-serif;
-  font-weight: 700;
-  font-size: 0.8rem;
-  letter-spacing: 0.25em;
-  text-transform: uppercase;
-  color: var(--red);
-  margin-bottom: 1.5rem;
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-}
-
-.fight-label .dot {
-  width: 6px; height: 6px;
-  border-radius: 50%;
-  background: var(--red);
-  animation: pulse-dot 1.4s ease-in-out infinite;
-}
-
-@keyframes pulse-dot {
-  0%, 100% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.6); opacity: 0.5; }
-}
-
-.hero-right .fight-label {
-  justify-content: flex-end;
-}
-
-.fighter-name {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: clamp(4rem, 9vw, 8rem);
-  line-height: 0.9;
-  letter-spacing: 0.02em;
-  color: var(--text);
-  text-shadow: 0 0 80px rgba(232,0,61,0.2);
-}
-
-.fighter-record {
-  font-family: 'Barlow Condensed', sans-serif;
-  font-size: 1rem;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  color: var(--muted);
-  margin-top: 0.8rem;
-  text-transform: uppercase;
-}
-
-.hero-center {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 10;
-  text-align: center;
-}
-
-.vs-badge {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 3rem;
-  color: var(--bg);
-  background: var(--red);
-  width: 80px; height: 80px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 0 40px var(--red-glow), 0 0 80px rgba(232,0,61,0.15);
-  letter-spacing: 0.02em;
-}
-
-/* Event info bar */
-.hero-info-bar {
-  position: absolute;
-  bottom: 0; left: 0; right: 0;
-  z-index: 20;
-  display: flex;
-  align-items: stretch;
-  border-top: 1px solid var(--border);
-  background: rgba(8,8,8,0.85);
-  backdrop-filter: blur(8px);
-}
-
-.info-cell {
-  flex: 1;
-  padding: 1.4rem 2rem;
-  border-right: 1px solid var(--border);
-  display: flex;
-  flex-direction: column;
-  gap: 0.3rem;
-}
-
-.info-cell:last-child { border-right: none; }
-
-.info-label {
-  font-family: 'Barlow Condensed', sans-serif;
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: var(--muted);
-}
-
-.info-value {
-  font-family: 'Barlow Condensed', sans-serif;
-  font-size: 1.15rem;
-  font-weight: 700;
-  color: var(--text);
-  letter-spacing: 0.04em;
-}
-
-.info-value.highlight { color: var(--gold); }
-
-/* Countdown display */
-#heroCountdown {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 1.5rem;
-  letter-spacing: 0.08em;
-  color: var(--gold);
-}
-
-/* Poster image in hero */
-.poster-wrap {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  overflow: hidden;
-}
-
-.poster-wrap img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center top;
-  opacity: 0.18;
-  filter: saturate(0.4);
-}
-
-/* ─── SECTION TITLE ───────────────────────────────────────────────────────── */
-.section-header {
-  display: flex;
-  align-items: baseline;
-  gap: 1.5rem;
-  padding: 4rem 5rem 2rem;
-}
-
-.section-title {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 3.5rem;
-  letter-spacing: 0.04em;
-}
-
-.section-sub {
-  font-family: 'Barlow Condensed', sans-serif;
-  font-size: 0.85rem;
-  font-weight: 700;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: var(--muted);
-}
-
-/* ─── FIGHT CARDS GRID ────────────────────────────────────────────────────── */
-.fight-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
-  gap: 1px;
+  gap: 2px;
   background: var(--border);
-  margin: 0 5rem 6rem;
   border: 1px solid var(--border);
 }
 
-.fight-card {
+.hero-cards.count-1 { grid-template-columns: 1fr; }
+.hero-cards.count-2 { grid-template-columns: 1fr 1fr; }
+.hero-cards.count-3,
+.hero-cards.count-4 { grid-template-columns: repeat(3, 1fr); }
+
+.hero-card {
   background: var(--surface);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  position: relative;
-  cursor: pointer;
-  transition: background 0.25s;
+  position:relative; overflow:hidden;
+  padding: 2.8rem 3rem 2rem;
+  display:flex; flex-direction:column;
+  transition: background .25s;
+  animation: fadeUp .6s ease both;
+  min-height: 280px;
 }
 
-.fight-card:hover { background: var(--surface2); }
+.hero-card:hover { background: var(--surface2); }
 
-.fight-card:hover .card-accent-line {
-  width: 100%;
+.hero-card::before {
+  content:''; position:absolute; top:0; left:0; right:0;
+  height:3px;
+  background: linear-gradient(90deg, var(--red), transparent);
 }
 
-.card-accent-line {
-  height: 2px;
-  width: 0;
-  background: var(--red);
-  transition: width 0.4s ease;
-  position: absolute;
-  top: 0; left: 0;
+.hero-card-bg-time {
+  position:absolute; bottom:-1rem; right:1rem;
+  font-family:'Bebas Neue',sans-serif;
+  font-size:9rem; line-height:1;
+  color:rgba(255,255,255,0.025);
+  pointer-events:none; user-select:none;
 }
 
-.card-poster {
-  height: 200px;
-  overflow: hidden;
-  position: relative;
+.hero-sport-tag {
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:0.7rem; font-weight:700;
+  letter-spacing:0.22em; text-transform:uppercase;
+  color:var(--red); margin-bottom:1.2rem;
+  display:flex; align-items:center; gap:.5rem;
 }
 
-.card-poster img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: top;
-  transition: transform 0.5s ease;
-  filter: brightness(0.85);
+.hero-matchup {
+  display:flex; align-items:center; gap:1.2rem;
+  margin-bottom:1rem;
+  flex-wrap:wrap;
 }
 
-.fight-card:hover .card-poster img {
-  transform: scale(1.04);
+.hero-fighter {
+  font-family:'Bebas Neue',sans-serif;
+  letter-spacing:0.03em; line-height:.95;
+  color:var(--text);
 }
 
-.card-poster-fallback {
-  height: 200px;
-  background: linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.count-1 .hero-fighter { font-size: clamp(3.5rem, 7vw, 7rem); }
+.count-2 .hero-fighter { font-size: clamp(2.5rem, 3.5vw, 4.5rem); }
+.count-3 .hero-fighter,
+.count-4 .hero-fighter { font-size: clamp(1.8rem, 2.5vw, 3.2rem); }
+
+.hero-vs {
+  font-family:'Bebas Neue',sans-serif;
+  font-size:1.3rem; color:var(--red);
+  background: var(--red-dim);
+  padding:.2rem .7rem; border-radius:2px;
+  flex-shrink:0;
 }
 
-.card-poster-fallback .sport-icon {
-  font-size: 3rem;
-  opacity: 0.15;
+.hero-meta {
+  display:flex; flex-wrap:wrap; gap:.5rem 2.5rem;
+  margin-top:auto; padding-top:1.4rem;
+  border-top:1px solid var(--border);
 }
 
-.card-body {
-  padding: 1.5rem 1.8rem;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
+.hero-meta-item { display:flex; flex-direction:column; gap:.15rem; }
+
+.hero-meta-label {
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:0.65rem; font-weight:700;
+  letter-spacing:0.2em; text-transform:uppercase;
+  color:var(--muted);
 }
 
-.card-sport-tag {
-  font-family: 'Barlow Condensed', sans-serif;
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: var(--red);
+.hero-meta-value {
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:1rem; font-weight:700;
+  color:var(--text); letter-spacing:0.04em;
 }
 
-.card-title {
-  font-family: 'Barlow Condensed', sans-serif;
-  font-size: 1.5rem;
-  font-weight: 900;
-  line-height: 1.1;
-  color: var(--text);
-  letter-spacing: 0.02em;
+.hero-meta-value.countdown-val {
+  font-family:'Bebas Neue',sans-serif;
+  font-size:1.5rem; color:var(--gold);
+  letter-spacing:0.06em;
 }
 
-.card-meta {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  margin-top: auto;
-  padding-top: 1rem;
-  border-top: 1px solid var(--border);
+.hero-meta-value.live-val { color:var(--red); animation: blink 1s infinite; }
+
+/* FIGHT SPORT BADGE */
+.fight-sport {
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:0.68rem; font-weight:700;
+  letter-spacing:0.18em; text-transform:uppercase;
+  padding:.22rem .55rem; border-radius:2px;
+  white-space:nowrap; display:inline-block;
+}
+.sport-ufc    { background:rgba(232,0,61,0.15); color:var(--red); border:1px solid rgba(232,0,61,0.3); }
+.sport-boxing { background:rgba(245,197,24,0.1); color:var(--gold); border:1px solid rgba(245,197,24,0.25); }
+
+/* SCHEDULE SECTION */
+.schedule-section { max-width:1400px; margin:0 auto; padding:3rem 3rem 6rem; }
+
+.schedule-header {
+  display:flex; align-items:baseline; justify-content:space-between;
+  margin-bottom:1.5rem;
+  padding-bottom:1rem;
+  border-bottom:1px solid var(--border);
 }
 
-.card-meta-row {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.85rem;
-  color: var(--muted);
-  font-family: 'Barlow Condensed', sans-serif;
-  font-weight: 600;
-  letter-spacing: 0.04em;
+.schedule-title { font-family:'Bebas Neue',sans-serif; font-size:2.8rem; letter-spacing:0.04em; }
+
+.schedule-sub {
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:0.8rem; font-weight:700;
+  letter-spacing:0.2em; text-transform:uppercase;
+  color:var(--muted);
 }
 
-.card-meta-row svg {
-  flex-shrink: 0;
-  opacity: 0.5;
+/* Day group */
+.day-group { margin-bottom:2rem; animation: fadeUp .5s ease both; }
+
+.day-header {
+  display:flex; align-items:center; gap:1.5rem;
+  padding:.7rem 0;
+  position:sticky; top:65px;
+  background:var(--bg); z-index:10;
 }
 
-.card-countdown {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 1.3rem;
-  color: var(--gold);
-  letter-spacing: 0.06em;
+.day-date {
+  font-family:'Bebas Neue',sans-serif;
+  font-size:1.5rem; letter-spacing:0.06em; color:var(--text);
+  white-space:nowrap;
+}
+.day-date.today { color:var(--red); }
+
+.day-line { flex:1; height:1px; background:var(--border); }
+
+.day-count {
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:0.75rem; font-weight:700;
+  letter-spacing:0.15em; text-transform:uppercase;
+  color:var(--muted); white-space:nowrap;
 }
 
-.card-broadcaster {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  background: rgba(255,255,255,0.06);
-  padding: 0.25rem 0.7rem;
-  border-radius: 3px;
-  font-family: 'Barlow Condensed', sans-serif;
-  font-size: 0.8rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  color: var(--text);
-  text-transform: uppercase;
-  margin-top: 0.4rem;
-  align-self: flex-start;
+/* Fight row */
+.fight-row {
+  display:grid;
+  grid-template-columns: 80px 1fr 200px 160px 170px;
+  align-items:center;
+  gap:1.5rem;
+  padding:1.3rem 1rem;
+  border-bottom:1px solid var(--border);
+  transition:background .2s;
 }
 
-/* ─── STATUS PILL ─────────────────────────────────────────────────────────── */
+.fight-row:hover { background:var(--surface); }
+.fight-row:last-child { border-bottom: 1px solid var(--border); }
+
+.fight-matchup { display:flex; flex-direction:column; gap:.25rem; }
+
+.fight-fighters {
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:1.4rem; font-weight:900;
+  letter-spacing:0.02em; line-height:1.05;
+  color:var(--text);
+}
+
+.fight-fighters .vs-inline {
+  font-size:.9rem; font-weight:600;
+  color:var(--muted); margin:0 .4rem;
+}
+
+.fight-event-name {
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:0.78rem; font-weight:600;
+  letter-spacing:0.06em; color:var(--muted);
+  text-transform:uppercase;
+}
+
+.fight-location {
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:0.92rem; font-weight:600;
+  color:var(--muted); line-height:1.4;
+}
+.fight-location strong { display:block; color:var(--text); font-size:1rem; font-weight:700; }
+
+.fight-time { font-family:'Barlow Condensed',sans-serif; font-weight:700; line-height:1.3; }
+.fight-time .time-main {
+  font-family:'Bebas Neue',sans-serif;
+  font-size:1.6rem; color:var(--text);
+  display:block; letter-spacing:0.06em;
+}
+.fight-time .time-zone { font-size:0.72rem; color:var(--muted); letter-spacing:0.12em; text-transform:uppercase; }
+
+.fight-countdown {
+  font-family:'Bebas Neue',sans-serif;
+  font-size:1.5rem; letter-spacing:0.06em;
+  color:var(--gold); text-align:right;
+}
+.fight-countdown.is-live { color:var(--red); animation:blink 1s infinite; }
+.fight-countdown.is-soon { color:#ff8c42; }
+
+/* Status pill */
 .status-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 0.2rem 0.8rem;
-  border-radius: 2px;
-  font-family: 'Barlow Condensed', sans-serif;
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
+  display:inline-block;
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:0.62rem; font-weight:700;
+  letter-spacing:0.15em; text-transform:uppercase;
+  padding:.15rem .55rem; border-radius:2px; margin-top:.2rem;
+}
+.pill-live { background:var(--red); color:#fff; }
+.pill-soon { background:#ff8c42; color:#000; }
+
+/* BOTTOM NAV */
+.bottom-nav {
+  display:grid; grid-template-columns:1fr 1fr;
+  gap:1px; background:var(--border);
+  border-top:1px solid var(--border);
 }
 
-.pill-live {
-  background: var(--red);
-  color: white;
+.bottom-nav-card {
+  background:var(--surface);
+  padding:2.5rem 3rem;
+  text-decoration:none;
+  display:flex; align-items:center; justify-content:space-between;
+  transition:background .25s; position:relative; overflow:hidden;
 }
-
-.pill-live::before {
-  content: '';
-  width: 5px; height: 5px;
-  border-radius: 50%;
-  background: white;
-  animation: pulse-dot 1s infinite;
+.bottom-nav-card:hover { background:var(--surface2); }
+.bottom-nav-card::after {
+  content:''; position:absolute; bottom:0; left:0; right:0;
+  height:2px; background:var(--red);
+  transform:scaleX(0); transform-origin:left;
+  transition:transform .35s ease;
 }
+.bottom-nav-card:hover::after { transform:scaleX(1); }
 
-.pill-soon { background: var(--gold); color: #111; }
-.pill-upcoming { background: rgba(255,255,255,0.1); color: var(--muted); }
+.bnc-label { font-family:'Barlow Condensed',sans-serif; font-size:0.72rem; font-weight:700; letter-spacing:0.2em; text-transform:uppercase; color:var(--muted); margin-bottom:.4rem; }
+.bnc-title { font-family:'Bebas Neue',sans-serif; font-size:3rem; letter-spacing:0.04em; line-height:1; color:var(--text); }
+.bnc-arrow { font-size:1.8rem; color:var(--red); transition:transform .25s; }
+.bottom-nav-card:hover .bnc-arrow { transform:translate(5px,-5px); }
 
-/* ─── SECTION DIVIDER ─────────────────────────────────────────────────────── */
-.divider {
-  display: flex;
-  align-items: center;
-  gap: 1.5rem;
-  padding: 1rem 5rem;
-  margin-bottom: 1rem;
-}
-
-.divider-line {
-  flex: 1;
-  height: 1px;
-  background: var(--border);
-}
-
-.divider-label {
-  font-family: 'Barlow Condensed', sans-serif;
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.25em;
-  text-transform: uppercase;
-  color: var(--muted);
-}
-
-/* ─── NAV CARDS ───────────────────────────────────────────────────────────── */
-.nav-cards {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1px;
-  margin: 0 5rem;
-  background: var(--border);
-  border: 1px solid var(--border);
-}
-
-.nav-card {
-  background: var(--surface);
-  padding: 3rem;
-  text-decoration: none;
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  min-height: 220px;
-  position: relative;
-  overflow: hidden;
-  transition: background 0.25s;
-}
-
-.nav-card:hover { background: var(--surface2); }
-
-.nav-card::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-size: cover;
-  background-position: center;
-  opacity: 0;
-  transition: opacity 0.4s;
-}
-
-.nav-card:hover::before { opacity: 0.06; }
-
-.nav-card-ufc::before {
-  background-image: url('UFC-bg.jpg');
-}
-
-.nav-card-boxing::before {
-  background-image: url('https://images.unsplash.com/photo-1552072092-7f9b8d63efcb?auto=format&fit=crop&q=80&w=1200');
-}
-
-.nav-card-content {
-  position: relative;
-  z-index: 1;
-}
-
-.nav-card-label {
-  font-family: 'Barlow Condensed', sans-serif;
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: var(--muted);
-  margin-bottom: 0.6rem;
-}
-
-.nav-card-title {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 3.5rem;
-  letter-spacing: 0.04em;
-  color: var(--text);
-  line-height: 1;
-}
-
-.nav-card-arrow {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 2rem;
-  color: var(--red);
-  position: relative;
-  z-index: 1;
-  transition: transform 0.25s;
-}
-
-.nav-card:hover .nav-card-arrow {
-  transform: translate(4px, -4px);
-}
-
-/* ─── FOOTER ──────────────────────────────────────────────────────────────── */
+/* FOOTER */
 footer {
-  margin-top: 6rem;
-  padding: 2.5rem 5rem;
-  border-top: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  padding:2rem 3rem;
+  display:flex; align-items:center; justify-content:space-between;
+  border-top:1px solid var(--border);
 }
+.footer-logo { font-family:'Bebas Neue',sans-serif; font-size:1.3rem; letter-spacing:.08em; color:var(--muted); }
+.footer-logo span { color:var(--red); }
+.footer-copy { font-size:.78rem; color:var(--muted); letter-spacing:.05em; }
 
-.footer-logo {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 1.4rem;
-  letter-spacing: 0.08em;
-  color: var(--muted);
+/* LOADING / ERROR */
+.state-box {
+  padding:5rem 3rem; text-align:center;
+  color:var(--muted);
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:1.1rem; letter-spacing:.06em;
 }
-
-.footer-logo span { color: var(--red); }
-
-.footer-copy {
-  font-size: 0.8rem;
-  color: var(--muted);
-  letter-spacing: 0.05em;
-}
-
-/* ─── LOADING ─────────────────────────────────────────────────────────────── */
-.loading-state {
-  padding: 5rem;
-  text-align: center;
-  color: var(--muted);
-}
-
 .spinner {
-  width: 32px; height: 32px;
-  border: 2px solid rgba(232,0,61,0.2);
-  border-top-color: var(--red);
-  border-radius: 50%;
-  animation: spin 0.7s linear infinite;
-  margin: 0 auto 1rem;
+  width:28px; height:28px;
+  border:2px solid rgba(232,0,61,.2);
+  border-top-color:var(--red);
+  border-radius:50%;
+  animation:spin .7s linear infinite;
+  margin:0 auto 1rem;
+}
+@keyframes spin { to { transform:rotate(360deg); } }
+
+.error-bar {
+  background:rgba(232,0,61,.07);
+  border:1px solid rgba(232,0,61,.2);
+  border-radius:3px; padding:.7rem 1.5rem;
+  font-size:.85rem; color:#ff6b6b;
+  margin:.5rem 3rem;
+  font-family:'Barlow Condensed',sans-serif;
 }
 
-@keyframes spin { to { transform: rotate(360deg); } }
-
-/* ─── ERROR STATE ─────────────────────────────────────────────────────────── */
-.error-notice {
-  background: rgba(232,0,61,0.07);
-  border: 1px solid rgba(232,0,61,0.2);
-  border-radius: 4px;
-  padding: 0.8rem 1.2rem;
-  font-size: 0.85rem;
-  color: #ff6b6b;
-  margin: 1rem 5rem;
-  font-family: 'Barlow Condensed', sans-serif;
-  letter-spacing: 0.04em;
-}
-
-/* ─── RESPONSIVE ──────────────────────────────────────────────────────────── */
-@media (max-width: 900px) {
-  header { padding: 1.2rem 1.5rem; }
-  nav { gap: 1.5rem; }
-
-  .hero { grid-template-columns: 1fr; min-height: auto; }
-  .hero::after { display: none; }
-  .hero-left, .hero-right { padding: 3rem 2rem 2rem; text-align: center; align-items: center; }
-  .hero-right { padding-top: 0; border-top: 1px solid var(--border); }
-  .hero-right .fight-label { justify-content: center; }
-  .hero-center { position: static; transform: none; padding: 1.5rem 0; }
-  .hero-info-bar { position: static; flex-wrap: wrap; }
-  .info-cell { min-width: 50%; border-bottom: 1px solid var(--border); }
-
-  .section-header, .divider, footer { padding-left: 1.5rem; padding-right: 1.5rem; }
-  .fight-grid, .nav-cards { margin: 0 1.5rem 4rem; }
-  .nav-cards { grid-template-columns: 1fr; }
-  .error-notice { margin: 1rem 1.5rem; }
-  .fighter-name { font-size: clamp(3rem, 12vw, 5rem); }
-}
-
-/* ─── ENTRANCE ANIMATIONS ─────────────────────────────────────────────────── */
 @keyframes fadeUp {
-  from { opacity: 0; transform: translateY(24px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from { opacity:0; transform:translateY(20px); }
+  to   { opacity:1; transform:translateY(0); }
 }
 
-.hero-left  { animation: fadeUp 0.7s ease both; }
-.hero-right { animation: fadeUp 0.7s 0.15s ease both; }
-.hero-info-bar { animation: fadeUp 0.7s 0.3s ease both; }
+/* RESPONSIVE */
+@media (max-width:1000px) {
+  header { padding:1.2rem 1.5rem; }
+  .hero-section, .schedule-section { padding-left:1.5rem; padding-right:1.5rem; }
 
-.fight-card {
-  animation: fadeUp 0.5s ease both;
+  .hero-cards.count-2,
+  .hero-cards.count-3,
+  .hero-cards.count-4 { grid-template-columns:1fr; }
+
+  .fight-row {
+    grid-template-columns: 70px 1fr;
+    grid-template-rows: auto auto auto;
+    gap:.5rem 1rem;
+  }
+  .fight-location { grid-column:2; }
+  .fight-time     { grid-column:2; }
+  .fight-countdown{ grid-column:2; text-align:left; font-size:1.2rem; }
+
+  .bottom-nav { grid-template-columns:1fr; }
+  footer { padding:1.5rem; flex-direction:column; gap:.5rem; text-align:center; }
 }
 </style>
 </head>
 <body>
 
-<!-- ─── HEADER ─────────────────────────────────────────────────────────────── -->
 <header>
   <div class="logo">Fight<span>Times</span></div>
   <nav>
@@ -672,95 +413,39 @@ footer {
   </nav>
 </header>
 
-<!-- ─── HERO (populated by JS) ────────────────────────────────────────────── -->
-<section class="hero" id="heroSection">
-  <div class="hero-bg"></div>
+<div id="errorContainer"></div>
 
-  <!-- Poster bg -->
-  <div class="poster-wrap" id="heroPosterWrap" style="display:none">
-    <img id="heroPosterImg" src="" alt="">
+<section class="hero-section">
+  <div class="hero-label">
+    <span class="pulse"></span>
+    <span id="heroLabel">Next Fight Night</span>
   </div>
-
-  <div class="hero-left">
-    <div class="fight-label">
-      <span class="dot"></span>
-      <span id="heroSportLabel">Next Fight</span>
-    </div>
-    <div class="fighter-name" id="heroFighter1">—</div>
-    <div class="fighter-record" id="heroEvent" style="margin-top:1rem;color:var(--muted);font-size:1rem;">Loading...</div>
-  </div>
-
-  <div class="hero-center">
-    <div class="vs-badge">VS</div>
-  </div>
-
-  <div class="hero-right">
-    <div class="fight-label">
-      <span class="dot"></span>
-      <span id="heroSportLabel2">Upcoming</span>
-    </div>
-    <div class="fighter-name" id="heroFighter2">—</div>
-    <div class="fighter-record" id="heroStatus" style="margin-top:1rem;">—</div>
-  </div>
-
-  <div class="hero-info-bar">
-    <div class="info-cell">
-      <div class="info-label">Event</div>
-      <div class="info-value" id="heroEventName">—</div>
-    </div>
-    <div class="info-cell">
-      <div class="info-label">Date</div>
-      <div class="info-value" id="heroDate">—</div>
-    </div>
-    <div class="info-cell">
-      <div class="info-label">Location</div>
-      <div class="info-value" id="heroLocation">—</div>
-    </div>
-    <div class="info-cell">
-      <div class="info-label">Countdown</div>
-      <div id="heroCountdown">—</div>
+  <div class="hero-cards count-1" id="heroCards">
+    <div class="state-box" style="grid-column:1/-1">
+      <div class="spinner"></div>
+      Loading fights...
     </div>
   </div>
 </section>
 
-<!-- ─── ERRORS ─────────────────────────────────────────────────────────────── -->
-<div id="errorContainer"></div>
-
-<!-- ─── UPCOMING FIGHTS GRID ───────────────────────────────────────────────── -->
-<div class="section-header">
-  <h2 class="section-title">Upcoming Events</h2>
-  <span class="section-sub">Next 30 days</span>
-</div>
-
-<div class="fight-grid" id="fightGrid">
-  <div class="loading-state" style="grid-column:1/-1">
-    <div class="spinner"></div>
-    Loading events...
+<section class="schedule-section">
+  <div class="schedule-header">
+    <h2 class="schedule-title">This Week</h2>
+    <span class="schedule-sub">Next 7 days</span>
   </div>
-</div>
+  <div id="scheduleList">
+    <div class="state-box"><div class="spinner"></div></div>
+  </div>
+</section>
 
-<!-- ─── DIVIDER ─────────────────────────────────────────────────────────────── -->
-<div class="divider">
-  <div class="divider-line"></div>
-  <div class="divider-label">Browse by sport</div>
-  <div class="divider-line"></div>
-</div>
-
-<!-- ─── NAV CARDS ─────────────────────────────────────────────────────────── -->
-<div class="nav-cards">
-  <a href="ufc.html" class="nav-card nav-card-ufc">
-    <div class="nav-card-content">
-      <div class="nav-card-label">Full schedule</div>
-      <div class="nav-card-title">UFC</div>
-    </div>
-    <div class="nav-card-arrow">↗</div>
+<div class="bottom-nav">
+  <a href="ufc.html" class="bottom-nav-card">
+    <div><div class="bnc-label">Full schedule</div><div class="bnc-title">UFC</div></div>
+    <div class="bnc-arrow">↗</div>
   </a>
-  <a href="boxing.html" class="nav-card nav-card-boxing">
-    <div class="nav-card-content">
-      <div class="nav-card-label">Full schedule</div>
-      <div class="nav-card-title">Boxing</div>
-    </div>
-    <div class="nav-card-arrow">↗</div>
+  <a href="boxing.html" class="bottom-nav-card">
+    <div><div class="bnc-label">Full schedule</div><div class="bnc-title">Boxing</div></div>
+    <div class="bnc-arrow">↗</div>
   </a>
 </div>
 
@@ -770,232 +455,343 @@ footer {
 </footer>
 
 <script>
-// ─── UTILITIES ────────────────────────────────────────────────────────────────
+// ── HELPERS ───────────────────────────────────────────────────────────────────
+
 function showError(msg) {
   const c = document.getElementById('errorContainer');
   const d = document.createElement('div');
-  d.className = 'error-notice';
+  d.className = 'error-bar';
   d.textContent = '⚠ ' + msg;
   c.appendChild(d);
 }
 
+function dayKey(dateStr) {
+  const d = new Date(dateStr);
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function todayKey() { return dayKey(new Date().toISOString()); }
+
+function tomorrowKey() {
+  const t = new Date(); t.setDate(t.getDate()+1);
+  return dayKey(t.toISOString());
+}
+
+function formatDayHeader(dateStr) {
+  const dk = dayKey(dateStr);
+  if (dk === todayKey())   return 'TODAY';
+  if (dk === tomorrowKey()) return 'TOMORROW';
+  return new Date(dateStr).toLocaleDateString('en-GB', {
+    weekday:'long', day:'numeric', month:'long'
+  }).toUpperCase();
+}
+
+function formatTime(dateStr) {
+  return new Date(dateStr).toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit' });
+}
+
+function formatTimeZone(dateStr) {
+  // Extract timezone abbreviation from locale string
+  const str = new Date(dateStr).toLocaleTimeString('en-GB', { timeZoneName:'short' });
+  const parts = str.split(' ');
+  return parts[parts.length - 1] || 'GMT';
+}
+
 function getCountdown(dateStr) {
-  const diff = new Date(dateStr) - new Date();
-  if (diff <= 0) return 'LIVE NOW';
+  const diff = new Date(dateStr) - Date.now();
+  if (diff <= 0) return { str:'● LIVE NOW', state:'live' };
   const d = Math.floor(diff / 86400000);
   const h = Math.floor((diff % 86400000) / 3600000);
   const m = Math.floor((diff % 3600000) / 60000);
   const s = Math.floor((diff % 60000) / 1000);
-  if (d > 0) return `${d}D ${h}H ${m}M`;
-  return `${h}H ${m}M ${s}S`;
+  const str = d > 0 ? `${d}D ${h}H ${m}M` : `${h}H ${m}M ${s}S`;
+  return { str, state: diff < 3600000 ? 'soon' : 'upcoming' };
 }
 
-function getStatusPill(dateStr) {
-  const diff = new Date(dateStr) - new Date();
-  if (diff <= 0 && diff > -86400000) return `<span class="status-pill pill-live">● LIVE</span>`;
-  if (diff < 86400000) return `<span class="status-pill pill-soon">TOMORROW</span>`;
-  return `<span class="status-pill pill-upcoming">UPCOMING</span>`;
-}
-
-function formatDate(dateStr) {
-  return new Date(dateStr).toLocaleDateString('en-GB', {
-    weekday: 'short', day: 'numeric', month: 'short', year: 'numeric'
-  });
-}
-
-function formatTime(dateStr) {
-  return new Date(dateStr).toLocaleTimeString('en-GB', {
-    hour: '2-digit', minute: '2-digit', timeZoneName: 'short'
-  });
-}
-
-// Parse "Fighter A vs. Fighter B" into two parts
 function parseFighters(title) {
-  const m = title.match(/^(.+?)\s+vs\.?\s+(.+)$/i);
+  // Strip event prefix like "UFC Fight Night: "
+  const clean = title.replace(/^[^:]+:\s*/, '');
+  const m = clean.match(/^(.+?)\s+vs\.?\s+(.+)$/i);
   if (m) return [m[1].trim(), m[2].trim()];
-  return [title, ''];
+  return [title, null];
 }
 
-function getBroadcasterHTML(event) {
-  if (!event.broadcast || !event.broadcast.length) return '';
-  const b = event.broadcast[0];
-  const broadcasters = b.broadcasters || [];
-  if (!broadcasters.length) return '';
-  return `<span class="card-broadcaster">📺 ${broadcasters.join(', ')}</span>`;
+function getPillHTML(dateStr) {
+  const diff = new Date(dateStr) - Date.now();
+  if (diff <= 0 && diff > -10800000) return '<span class="status-pill pill-live">● LIVE</span>';
+  if (diff > 0 && diff < 3600000)    return '<span class="status-pill pill-soon">SOON</span>';
+  return '';
 }
 
-// ─── FETCH ────────────────────────────────────────────────────────────────────
+// ── FETCH ─────────────────────────────────────────────────────────────────────
+
 async function fetchAllFights() {
   const res = await fetch('/api/fights');
-  if (!res.ok) throw new Error(`API ${res.status}: ${res.statusText}`);
-  return await res.json();
+  if (!res.ok) throw new Error(`API ${res.status}`);
+  return res.json();
 }
 
-// ─── NORMALIZE DATA ───────────────────────────────────────────────────────────
-function normalizeBoxing(data) {
-  const raw = Array.isArray(data.boxing) ? data.boxing
-    : Array.isArray(data.boxing?.data) ? data.boxing.data
-    : Array.isArray(data.boxing?.fights) ? data.boxing.fights
-    : [];
+// ── NORMALIZE ─────────────────────────────────────────────────────────────────
 
-  return raw.map(f => ({
-    type: 'Boxing',
-    title: f.title || 'TBA vs TBA',
-    date: f.date || f.fight_date || f.event_date || '',
-    location: f.location || '',
-    venue: f.venue || '',
+function normalizeBoxing(raw) {
+  const arr = Array.isArray(raw) ? raw
+    : Array.isArray(raw?.data) ? raw.data
+    : Array.isArray(raw?.fights) ? raw.fights : [];
+
+  return arr.map(f => ({
+    type:      'Boxing',
+    title:     f.title || 'TBA vs TBA',
+    displayTitle: f.title || 'TBA vs TBA',
+    date:      f.date || f.fight_date || f.event_date || '',
+    location:  f.location || '',
+    venue:     f.venue || '',
     posterUrl: f.poster_image_url || null,
-    broadcast: f.broadcast || [],
-    promotion: f.promotion || '',
+    promotion: f.promotion || 'Boxing',
   })).filter(f => f.date);
 }
 
-function normalizeUFC(data) {
-  // The MMA API returns individual fights, not events.
-  // Group by tournament name + startTimestamp to deduplicate
-  const raw = Array.isArray(data.ufc) ? data.ufc : [];
+function normalizeUFC(raw) {
+  const arr = Array.isArray(raw) ? raw : [];
 
+  // Group individual fights by tournament name
   const eventMap = {};
-  raw.forEach(fight => {
-    const key = fight.tournament?.name || 'UFC Event';
-    if (!eventMap[key]) {
-      // Use the tournament startTimestamp as the event date
-      const ts = fight.tournament?.startTimestamp;
-      eventMap[key] = {
-        type: 'UFC',
-        title: fight.tournament?.name || 'UFC Event',
-        date: ts ? new Date(ts * 1000).toISOString() : '',
-        location: fight.tournament?.location || fight.venue?.city?.name || '',
-        venue: fight.venue?.name || '',
+
+  arr.forEach(fight => {
+    const tName = fight.tournament?.name || 'UFC Event';
+    if (!eventMap[tName]) {
+      const ts = fight.tournament?.startTimestamp || fight.startTimestamp;
+      eventMap[tName] = {
+        type:      'UFC',
+        title:     tName,
+        date:      ts ? new Date(ts * 1000).toISOString() : '',
+        location:  fight.tournament?.location || fight.venue?.city?.name || '',
+        venue:     fight.venue?.name || '',
         posterUrl: null,
-        broadcast: [],
         promotion: 'UFC',
+        _fights:   [],
       };
+    }
+    eventMap[tName]._fights.push(fight);
+  });
+
+  // Build displayTitle from the highest-order (main event) fight
+  Object.values(eventMap).forEach(ev => {
+    if (ev._fights.length) {
+      const main = ev._fights.reduce((a,b) =>
+        ((a.order || 0) > (b.order || 0) ? a : b)
+      );
+      const f1 = main.homeTeam?.name || 'TBA';
+      const f2 = main.awayTeam?.name || 'TBA';
+      ev.displayTitle = `${f1} vs ${f2}`;
+    } else {
+      ev.displayTitle = ev.title;
     }
   });
 
   return Object.values(eventMap).filter(e => e.date);
 }
 
-// ─── HERO ─────────────────────────────────────────────────────────────────────
-let countdownInterval = null;
+// ── HERO ──────────────────────────────────────────────────────────────────────
 
-function populateHero(event) {
-  const [f1, f2] = parseFighters(event.title);
-  document.getElementById('heroFighter1').textContent = f1 || '—';
-  document.getElementById('heroFighter2').textContent = f2 || f1;
-  document.getElementById('heroEvent').textContent = event.type + ' • ' + (event.promotion || event.type);
-  document.getElementById('heroSportLabel').textContent = event.type;
-  document.getElementById('heroSportLabel2').textContent = event.type;
-  document.getElementById('heroEventName').textContent = event.title;
-  document.getElementById('heroDate').textContent = formatDate(event.date);
-  document.getElementById('heroLocation').textContent = event.location || event.venue || '—';
+const _intervals = [];
 
-  const diff = new Date(event.date) - new Date();
-  if (diff <= 0 && diff > -86400000) {
-    document.getElementById('heroStatus').innerHTML = '<span class="status-pill pill-live">● LIVE NOW</span>';
-  } else {
-    document.getElementById('heroStatus').innerHTML = '<span class="status-pill pill-upcoming">UPCOMING</span>';
-  }
-
-  // Countdown ticker
-  const el = document.getElementById('heroCountdown');
-  if (countdownInterval) clearInterval(countdownInterval);
-  const update = () => { el.textContent = getCountdown(event.date); };
-  update();
-  countdownInterval = setInterval(update, 1000);
-
-  // Poster bg
-  if (event.posterUrl) {
-    document.getElementById('heroPosterImg').src = event.posterUrl;
-    document.getElementById('heroPosterWrap').style.display = '';
-  }
-}
-
-// ─── FIGHT CARDS ─────────────────────────────────────────────────────────────
-function buildCard(event, index) {
-  const [f1, f2] = parseFighters(event.title);
+function buildHeroCard(event, countClass) {
   const card = document.createElement('div');
-  card.className = 'fight-card';
-  card.style.animationDelay = `${index * 0.08}s`;
+  card.className = 'hero-card';
 
-  const posterHTML = event.posterUrl
-    ? `<div class="card-poster"><img src="${event.posterUrl}" alt="${event.title}" loading="lazy" onerror="this.parentElement.innerHTML='<div class=\\'card-poster-fallback\\'><span class=\\'sport-icon\\'>🥊</span></div>'"></div>`
-    : `<div class="card-poster-fallback"><span class="sport-icon">${event.type === 'UFC' ? '🥋' : '🥊'}</span></div>`;
-
-  const broadcasterHTML = getBroadcasterHTML(event);
+  const [f1, f2] = parseFighters(event.displayTitle || event.title);
+  const time = formatTime(event.date);
+  const tz   = formatTimeZone(event.date);
+  const loc  = [event.venue, event.location].filter(Boolean).join(', ') || '—';
+  const sportClass = event.type === 'UFC' ? 'sport-ufc' : 'sport-boxing';
+  const idx = Math.random().toString(36).slice(2);
 
   card.innerHTML = `
-    <div class="card-accent-line"></div>
-    ${posterHTML}
-    <div class="card-body">
-      <div class="card-sport-tag">${event.type}${event.promotion ? ' • ' + event.promotion : ''}</div>
-      <div class="card-title">${f1}${f2 ? '<br><span style="color:var(--muted);font-size:0.85em">vs</span> ' + f2 : ''}</div>
-      ${broadcasterHTML}
-      <div class="card-meta">
-        <div class="card-meta-row">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
-          ${formatDate(event.date)} · ${formatTime(event.date)}
-        </div>
-        ${event.venue || event.location ? `<div class="card-meta-row">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
-          ${[event.venue, event.location].filter(Boolean).join(', ')}
-        </div>` : ''}
-        <div class="card-countdown" id="cd-${index}">—</div>
-        ${getStatusPill(event.date)}
+    <div class="hero-card-bg-time">${time}</div>
+    <div class="hero-sport-tag">
+      <span class="fight-sport ${sportClass}">${event.type}</span>
+      ${event.promotion && event.promotion !== event.type ? '&nbsp;' + event.promotion : ''}
+    </div>
+    <div class="hero-matchup">
+      <span class="hero-fighter">${f1}</span>
+      ${f2 ? `<span class="hero-vs">VS</span><span class="hero-fighter">${f2}</span>` : ''}
+    </div>
+    <div class="hero-meta">
+      <div class="hero-meta-item">
+        <span class="hero-meta-label">Location</span>
+        <span class="hero-meta-value">${loc}</span>
+      </div>
+      <div class="hero-meta-item">
+        <span class="hero-meta-label">Time</span>
+        <span class="hero-meta-value">${time} <span style="color:var(--muted);font-size:.85em">${tz}</span></span>
+      </div>
+      <div class="hero-meta-item">
+        <span class="hero-meta-label">Countdown</span>
+        <span class="hero-meta-value countdown-val" id="hcd-${idx}">—</span>
       </div>
     </div>`;
 
-  // Per-card countdown
-  const cdEl = card.querySelector(`#cd-${index}`);
-  setInterval(() => { cdEl.textContent = getCountdown(event.date); }, 1000);
-  cdEl.textContent = getCountdown(event.date);
+  function tick() {
+    const el = document.getElementById(`hcd-${idx}`);
+    if (!el) return;
+    const { str, state } = getCountdown(event.date);
+    el.textContent = str;
+    el.className = `hero-meta-value countdown-val${state === 'live' ? ' live-val' : ''}`;
+  }
+  tick();
+  _intervals.push(setInterval(tick, 1000));
 
   return card;
 }
 
-// ─── MAIN ─────────────────────────────────────────────────────────────────────
-async function init() {
-  const grid = document.getElementById('fightGrid');
+function renderHero(events) {
+  _intervals.forEach(clearInterval);
+  _intervals.length = 0;
 
+  const container = document.getElementById('heroCards');
+  container.innerHTML = '';
+
+  if (!events.length) {
+    container.innerHTML = '<div class="state-box">No fights found for the next fight night.</div>';
+    return;
+  }
+
+  const n = Math.min(events.length, 4);
+  container.className = `hero-cards count-${n}`;
+
+  const dk = dayKey(events[0].date);
+  document.getElementById('heroLabel').textContent =
+    dk === todayKey()   ? "Tonight's Fights" :
+    dk === tomorrowKey() ? "Tomorrow's Fights" :
+    "Next Fight Night";
+
+  events.forEach(ev => container.appendChild(buildHeroCard(ev, n)));
+}
+
+// ── SCHEDULE ──────────────────────────────────────────────────────────────────
+
+let rowIdx = 0;
+
+function buildFightRow(event) {
+  const row = document.createElement('div');
+  row.className = 'fight-row';
+
+  const [f1, f2] = parseFighters(event.displayTitle || event.title);
+  const sportClass = event.type === 'UFC' ? 'sport-ufc' : 'sport-boxing';
+  const loc  = [event.venue, event.location].filter(Boolean);
+  const time = formatTime(event.date);
+  const tz   = formatTimeZone(event.date);
+  const idx  = rowIdx++;
+
+  row.innerHTML = `
+    <div><span class="fight-sport ${sportClass}">${event.type}</span></div>
+    <div class="fight-matchup">
+      <div class="fight-fighters">
+        ${f1}${f2 ? `<span class="vs-inline">vs</span>${f2}` : ''}
+      </div>
+      <div class="fight-event-name">${event.title}</div>
+      ${getPillHTML(event.date)}
+    </div>
+    <div class="fight-location">
+      ${loc.length ? `<strong>${loc[0]}</strong>${loc[1] ? loc[1] : ''}` : '—'}
+    </div>
+    <div class="fight-time">
+      <span class="time-main">${time}</span>
+      <span class="time-zone">${tz}</span>
+    </div>
+    <div class="fight-countdown" id="rcd-${idx}">—</div>`;
+
+  function tick() {
+    const el = document.getElementById(`rcd-${idx}`);
+    if (!el) return;
+    const { str, state } = getCountdown(event.date);
+    el.textContent = str;
+    el.className = `fight-countdown${state === 'live' ? ' is-live' : state === 'soon' ? ' is-soon' : ''}`;
+  }
+  tick();
+  _intervals.push(setInterval(tick, 1000));
+
+  return row;
+}
+
+function renderSchedule(events) {
+  const list = document.getElementById('scheduleList');
+  list.innerHTML = '';
+  rowIdx = 0;
+
+  if (!events.length) {
+    list.innerHTML = '<div class="state-box">No events in the next 7 days. Check back soon.</div>';
+    return;
+  }
+
+  // Group by day
+  const groups = {};
+  events.forEach(e => {
+    const k = dayKey(e.date);
+    if (!groups[k]) groups[k] = [];
+    groups[k].push(e);
+  });
+
+  Object.entries(groups).forEach(([dk, fights], gi) => {
+    const group = document.createElement('div');
+    group.className = 'day-group';
+    group.style.animationDelay = `${gi * 0.07}s`;
+
+    const isToday = dk === todayKey();
+    group.innerHTML = `
+      <div class="day-header">
+        <div class="day-date ${isToday ? 'today' : ''}">${formatDayHeader(fights[0].date)}</div>
+        <div class="day-line"></div>
+        <div class="day-count">${fights.length} event${fights.length > 1 ? 's' : ''}</div>
+      </div>`;
+
+    fights.forEach(fight => group.appendChild(buildFightRow(fight)));
+    list.appendChild(group);
+  });
+}
+
+// ── MAIN ──────────────────────────────────────────────────────────────────────
+
+async function init() {
   try {
     const data = await fetchAllFights();
 
-    const boxingEvents = normalizeBoxing(data);
-    const ufcEvents    = normalizeUFC(data);
+    const boxing = normalizeBoxing(data.boxing);
+    const ufc    = normalizeUFC(data.ufc);
+    const all    = [...boxing, ...ufc];
 
-    // Merge and sort by date ascending, filter to upcoming only (within 45 days)
-    const now = new Date();
-    const cutoff = new Date(now.getTime() + 45 * 86400000);
+    const now     = Date.now();
+    const in7days = now + 7 * 86400000;
 
-    const allEvents = [...boxingEvents, ...ufcEvents]
+    // Include events started up to 3h ago (might still be live)
+    const upcoming = all
       .filter(e => {
-        const d = new Date(e.date);
-        return d >= new Date(now.getTime() - 86400000) && d <= cutoff;
+        const t = new Date(e.date).getTime();
+        return t >= (now - 10800000) && t <= in7days;
       })
       .sort((a, b) => new Date(a.date) - new Date(b.date));
 
-    if (!allEvents.length) {
-      grid.innerHTML = '<div class="loading-state">No upcoming events found in the next 45 days.</div>';
+    if (!upcoming.length) {
+      document.getElementById('heroCards').innerHTML =
+        '<div class="state-box">No events in the next 7 days.</div>';
+      document.getElementById('scheduleList').innerHTML =
+        '<div class="state-box">Check back soon.</div>';
       return;
     }
 
-    // Hero = soonest event
-    populateHero(allEvents[0]);
+    // Hero = all events on the soonest day
+    const soonestDay = dayKey(upcoming[0].date);
+    renderHero(upcoming.filter(e => dayKey(e.date) === soonestDay));
 
-    // Build grid
-    grid.innerHTML = '';
-    allEvents.forEach((event, i) => grid.appendChild(buildCard(event, i)));
+    // Full vertical schedule
+    renderSchedule(upcoming);
 
   } catch (err) {
     console.error(err);
     showError(err.message);
-    grid.innerHTML = '<div class="loading-state" style="color:#ff6b6b">Failed to load events. Check the console for details.</div>';
-    // Still try to show hero placeholder
-    document.getElementById('heroFighter1').textContent = 'FIGHT';
-    document.getElementById('heroFighter2').textContent = 'TIMES';
-    document.getElementById('heroEvent').textContent = 'UFC & Boxing Schedules';
-    document.getElementById('heroEventName').textContent = '—';
+    document.getElementById('heroCards').innerHTML =
+      '<div class="state-box" style="color:#ff6b6b">Failed to load events.</div>';
+    document.getElementById('scheduleList').innerHTML = '';
   }
 }
 
