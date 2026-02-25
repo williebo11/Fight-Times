@@ -17,8 +17,14 @@ export async function onRequestGet(context) {
     }
   }
 
-  // Just test ONE date first to confirm the endpoint + key work
-  const today = new Date().toISOString().split('T')[0];
+  // Build correct date format: YYYY-MM-DD split into year-month-day
+  const now = new Date();
+  const year  = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day   = String(now.getDate()).padStart(2, '0');
+
+  // Correct URL format: summaries.json with api_key as query param
+  const MMA_URL = `https://api.sportradar.com/mma/trial/v2/en/schedules/${year}-${month}-${day}/summaries.json?api_key=${SPORTRADAR_KEY}`;
 
   const [boxingRes, mmaRes] = await Promise.all([
     safeFetch(BOXING_API, {
@@ -27,10 +33,7 @@ export async function onRequestGet(context) {
         "X-RapidAPI-Host": "boxing-data-api.p.rapidapi.com",
       },
     }),
-    safeFetch(
-      `https://api.sportradar.com/mma/trial/v2/en/schedules/${today}/schedule.json`,
-      { headers: { "x-api-key": SPORTRADAR_KEY, "accept": "application/json" } }
-    ),
+    safeFetch(MMA_URL),
   ]);
 
   // Read MMA raw
@@ -50,7 +53,7 @@ export async function onRequestGet(context) {
     JSON.stringify({
       ufc: [],
       boxing: boxingData,
-      _debug: { date: today, status: mmaRes?.status, data: mmaRaw },
+      _debug: { url: MMA_URL.replace(SPORTRADAR_KEY, 'REDACTED'), status: mmaRes?.status, data: mmaRaw },
     }, null, 2),
     { headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" } }
   );
