@@ -9,7 +9,6 @@
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;900&family=Barlow:wght@400;500&display=swap" rel="stylesheet">
 
 <style>
-/* Your existing CSS remains unchanged – it's solid! */
 :root {
   --bg:       #080808;
   --surface:  #101010;
@@ -51,7 +50,7 @@ header {
   z-index:100;
 }
 
-.logo { font-family:'Bebas Neue',sans-serif; font-size:1.9rem; letter-spacing:0.1em; color:var(--text); }
+.logo { font-family:'Bebas Neue',sans-serif; font-size:1.9rem; letter-spacing:0.1em; color:var(--text); text-decoration:none; }
 .logo span { color:var(--red); }
 
 nav { display:flex; gap:2.5rem; align-items:center; }
@@ -107,6 +106,9 @@ nav a:hover { color:var(--text); }
   transition: background .25s;
   animation: fadeUp .6s ease both;
   min-height: 280px;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
 }
 
 .hero-card:hover { background: var(--surface2); }
@@ -117,20 +119,26 @@ nav a:hover { color:var(--text); }
   background: linear-gradient(90deg, var(--red), transparent);
 }
 
+/* Click hint on hero card */
+.hero-card::after {
+  content: 'VIEW CARD ↗';
+  position: absolute;
+  top: 1.2rem; right: 1.5rem;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.65rem; font-weight: 700;
+  letter-spacing: 0.2em;
+  color: var(--muted);
+  opacity: 0;
+  transition: opacity .2s;
+}
+.hero-card:hover::after { opacity: 1; }
+
 .hero-card-bg-time {
   position:absolute; bottom:-1rem; right:1rem;
   font-family:'Bebas Neue',sans-serif;
   font-size:9rem; line-height:1;
   color:rgba(255,255,255,0.025);
   pointer-events:none; user-select:none;
-}
-
-.hero-sport-tag {
-  font-family:'Barlow Condensed',sans-serif;
-  font-size:0.7rem; font-weight:700;
-  letter-spacing:0.22em; text-transform:uppercase;
-  color:var(--red); margin-bottom:1.2rem;
-  display:flex; align-items:center; gap:.5rem;
 }
 
 .hero-matchup {
@@ -187,54 +195,30 @@ nav a:hover { color:var(--text); }
 
 .hero-meta-value.live-val { color:var(--red); animation: blink 1s infinite; }
 
-/* ───────────────────────────── */
-/* ELITE SPORT BADGE UPGRADE */
-/* ───────────────────────────── */
-
+/* SPORT BADGES */
 .fight-sport {
   font-family:'Barlow Condensed',sans-serif;
-  font-size:0.7rem;
-  font-weight:800;
-  letter-spacing:0.2em;
-  text-transform:uppercase;
-  padding:.35rem .75rem;
-  border-radius:3px;
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  min-width:70px;
+  font-size:0.7rem; font-weight:800;
+  letter-spacing:0.2em; text-transform:uppercase;
+  padding:.35rem .75rem; border-radius:3px;
+  display:inline-flex; align-items:center;
+  justify-content:center; min-width:70px;
   transition:all .25s ease;
 }
-
 .fight-sport::before {
-  content:'';
-  width:6px;
-  height:6px;
-  border-radius:50%;
-  margin-right:.5rem;
+  content:''; width:6px; height:6px; border-radius:50%; margin-right:.5rem;
 }
-
 .sport-ufc {
-  background:linear-gradient(135deg, rgba(232,0,61,.18), rgba(232,0,61,.05));
-  color:var(--red);
-  border:1px solid rgba(232,0,61,.4);
+  background:linear-gradient(135deg,rgba(232,0,61,.18),rgba(232,0,61,.05));
+  color:var(--red); border:1px solid rgba(232,0,61,.4);
 }
-
-.sport-ufc::before {
-  background:var(--red);
-  box-shadow:0 0 8px var(--red);
-}
-
+.sport-ufc::before { background:var(--red); box-shadow:0 0 8px var(--red); }
 .sport-boxing {
-  background:linear-gradient(135deg, rgba(245,197,24,.18), rgba(245,197,24,.05));
-  color:var(--gold);
-  border:1px solid rgba(245,197,24,.35);
+  background:linear-gradient(135deg,rgba(245,197,24,.18),rgba(245,197,24,.05));
+  color:var(--gold); border:1px solid rgba(245,197,24,.35);
 }
+.sport-boxing::before { background:var(--gold); box-shadow:0 0 8px var(--gold); }
 
-.sport-boxing::before {
-  background:var(--gold);
-  box-shadow:0 0 8px var(--gold);
-}
 /* SCHEDULE SECTION */
 .schedule-section { max-width:1400px; margin:0 auto; padding:3rem 3rem 6rem; }
 
@@ -245,8 +229,6 @@ nav a:hover { color:var(--text); }
   border-bottom:1px solid var(--border);
 }
 
-.schedule-title { font-family:'Bebas Neue',sans-serif; font-size:2.8rem; letter-spacing:0.04em; }
-
 .schedule-sub {
   font-family:'Barlow Condensed',sans-serif;
   font-size:0.8rem; font-weight:700;
@@ -254,76 +236,25 @@ nav a:hover { color:var(--text); }
   color:var(--muted);
 }
 
-
-/* ───────────────────────────── */
-/* ELITE RANGE TOGGLE */
-/* ───────────────────────────── */
-
+/* RANGE TOGGLE */
 .range-toggle {
-  display:flex;
-  background:var(--surface);
-  border:1px solid var(--border);
-  border-radius:4px;
-  overflow:hidden;
+  display:flex; background:var(--surface);
+  border:1px solid var(--border); border-radius:4px; overflow:hidden;
 }
-
 .range-btn {
   font-family:'Barlow Condensed',sans-serif;
-  font-weight:700;
-  font-size:0.75rem;
-  letter-spacing:0.18em;
-  text-transform:uppercase;
-  padding:.55rem 1.2rem;
-  background:transparent;
-  color:var(--muted);
-  border:none;
-  cursor:pointer;
-  transition:all .25s ease;
+  font-weight:700; font-size:0.75rem;
+  letter-spacing:0.18em; text-transform:uppercase;
+  padding:.55rem 1.2rem; background:transparent;
+  color:var(--muted); border:none; cursor:pointer; transition:all .25s ease;
 }
-
-.range-btn:hover {
-  background:rgba(255,255,255,0.04);
-  color:var(--text);
-}
-
+.range-btn:hover { background:rgba(255,255,255,0.04); color:var(--text); }
 .range-btn.active {
-  background:linear-gradient(135deg, var(--red), #a8002b);
-  color:#fff;
-  box-shadow:0 0 14px rgba(232,0,61,.35);
+  background:linear-gradient(135deg,var(--red),#a8002b);
+  color:#fff; box-shadow:0 0 14px rgba(232,0,61,.35);
 }
 
-
-
-
-
-
-/* Day group */
-.day-group { margin-bottom:2rem; animation: fadeUp .5s ease both; }
-
-.day-header {
-  display:flex; align-items:center; gap:1.5rem;
-  padding:.7rem 0;
-  position:sticky; top:65px;
-  background:var(--bg); z-index:10;
-}
-
-.day-date {
-  font-family:'Bebas Neue',sans-serif;
-  font-size:1.5rem; letter-spacing:0.06em; color:var(--text);
-  white-space:nowrap;
-}
-.day-date.today { color:var(--red); }
-
-.day-line { flex:1; height:1px; background:var(--border); }
-
-.day-count {
-  font-family:'Barlow Condensed',sans-serif;
-  font-size:0.75rem; font-weight:700;
-  letter-spacing:0.15em; text-transform:uppercase;
-  color:var(--muted); white-space:nowrap;
-}
-
-/* Fight row */
+/* FIGHT ROW — now a clickable link */
 .fight-row {
   display:grid;
   grid-template-columns: 80px 1fr 200px 160px 170px;
@@ -331,25 +262,29 @@ nav a:hover { color:var(--text); }
   gap:1.5rem;
   padding:1.3rem 1rem;
   border-bottom:1px solid var(--border);
+  text-decoration:none;
+  color:inherit;
   transition:background .2s;
+  position:relative;
 }
-
 .fight-row:hover { background:var(--surface); }
 .fight-row:last-child { border-bottom: 1px solid var(--border); }
 
+/* Arrow indicator on hover */
+.fight-row .row-arrow {
+  position:absolute; right:1rem; top:50%; transform:translateY(-50%);
+  font-size:1.1rem; color:var(--red);
+  opacity:0; transition:opacity .2s, transform .2s;
+}
+.fight-row:hover .row-arrow { opacity:1; transform:translateY(-50%) translateX(3px); }
+
 .fight-matchup { display:flex; flex-direction:column; gap:.25rem; }
-
-
-
 
 .fight-date {
   font-family:'Barlow Condensed',sans-serif;
-  font-size:0.9rem;
-  font-weight:700;
-  letter-spacing:0.18em;
-  text-transform:uppercase;
-  color:var(--white);
-  margin-bottom:.3rem;
+  font-size:0.9rem; font-weight:700;
+  letter-spacing:0.18em; text-transform:uppercase;
+  color:var(--white); margin-bottom:.3rem;
 }
 
 .fight-fighters {
@@ -357,11 +292,6 @@ nav a:hover { color:var(--text); }
   font-size:1.4rem; font-weight:900;
   letter-spacing:0.02em; line-height:1.05;
   color:var(--text);
-}
-
-.fight-fighters .vs-inline {
-  font-size:.9rem; font-weight:600;
-  color:var(--muted); margin:0 .4rem;
 }
 
 .fight-event-name {
@@ -394,24 +324,12 @@ nav a:hover { color:var(--text); }
 .fight-countdown.is-live { color:var(--red); animation:blink 1s infinite; }
 .fight-countdown.is-soon { color:#ff8c42; }
 
-/* Status pill */
-.status-pill {
-  display:inline-block;
-  font-family:'Barlow Condensed',sans-serif;
-  font-size:0.62rem; font-weight:700;
-  letter-spacing:0.15em; text-transform:uppercase;
-  padding:.15rem .55rem; border-radius:2px; margin-top:.2rem;
-}
-.pill-live { background:var(--red); color:#fff; }
-.pill-soon { background:#ff8c42; color:#000; }
-
 /* BOTTOM NAV */
 .bottom-nav {
   display:grid; grid-template-columns:1fr 1fr;
   gap:1px; background:var(--border);
   border-top:1px solid var(--border);
 }
-
 .bottom-nav-card {
   background:var(--surface);
   padding:2.5rem 3rem;
@@ -427,7 +345,6 @@ nav a:hover { color:var(--text); }
   transition:transform .35s ease;
 }
 .bottom-nav-card:hover::after { transform:scaleX(1); }
-
 .bnc-label { font-family:'Barlow Condensed',sans-serif; font-size:0.72rem; font-weight:700; letter-spacing:0.2em; text-transform:uppercase; color:var(--muted); margin-bottom:.4rem; }
 .bnc-title { font-family:'Bebas Neue',sans-serif; font-size:3rem; letter-spacing:0.04em; line-height:1; color:var(--text); }
 .bnc-arrow { font-size:1.8rem; color:var(--red); transition:transform .25s; }
@@ -446,29 +363,23 @@ footer {
 /* LOADING / ERROR */
 .state-box {
   padding:5rem 3rem; text-align:center;
-  color:var(--muted);
-  font-family:'Barlow Condensed',sans-serif;
+  color:var(--muted); font-family:'Barlow Condensed',sans-serif;
   font-size:1.1rem; letter-spacing:.06em;
 }
 .spinner {
   width:28px; height:28px;
   border:2px solid rgba(232,0,61,.2);
-  border-top-color:var(--red);
-  border-radius:50%;
+  border-top-color:var(--red); border-radius:50%;
   animation:spin .7s linear infinite;
   margin:0 auto 1rem;
 }
 @keyframes spin { to { transform:rotate(360deg); } }
-
 .error-bar {
-  background:rgba(232,0,61,.07);
-  border:1px solid rgba(232,0,61,.2);
+  background:rgba(232,0,61,.07); border:1px solid rgba(232,0,61,.2);
   border-radius:3px; padding:.7rem 1.5rem;
-  font-size:.85rem; color:#ff6b6b;
-  margin:.5rem 3rem;
+  font-size:.85rem; color:#ff6b6b; margin:.5rem 3rem;
   font-family:'Barlow Condensed',sans-serif;
 }
-
 @keyframes fadeUp {
   from { opacity:0; transform:translateY(20px); }
   to   { opacity:1; transform:translateY(0); }
@@ -478,11 +389,9 @@ footer {
 @media (max-width:1000px) {
   header { padding:1.2rem 1.5rem; }
   .hero-section, .schedule-section { padding-left:1.5rem; padding-right:1.5rem; }
-
   .hero-cards.count-2,
   .hero-cards.count-3,
   .hero-cards.count-4 { grid-template-columns:1fr; }
-
   .fight-row {
     grid-template-columns: 70px 1fr;
     grid-template-rows: auto auto auto;
@@ -491,7 +400,6 @@ footer {
   .fight-location { grid-column:2; }
   .fight-time     { grid-column:2; }
   .fight-countdown{ grid-column:2; text-align:left; font-size:1.2rem; }
-
   .bottom-nav { grid-template-columns:1fr; }
   footer { padding:1.5rem; flex-direction:column; gap:.5rem; text-align:center; }
 }
@@ -500,7 +408,7 @@ footer {
 <body>
 
 <header>
-  <div class="logo">Fight<span>Times</span></div>
+  <a href="/" class="logo">Fight<span>Times</span></a>
   <nav>
     <a href="ufc.html">UFC</a>
     <a href="boxing.html">Boxing</a>
@@ -524,10 +432,10 @@ footer {
 
 <section class="schedule-section">
   <div class="schedule-header">
-  <div class="range-toggle">
-    <button class="range-btn active" data-range="7">7 DAYS</button>
-    <button class="range-btn" data-range="30">30 DAYS</button>
-  </div>
+    <div class="range-toggle">
+      <button class="range-btn active" data-range="7">7 DAYS</button>
+      <button class="range-btn" data-range="30">30 DAYS</button>
+    </div>
     <span class="schedule-sub" id="rangeLabel">Next 7 days</span>
   </div>
   <div id="scheduleList">
@@ -555,7 +463,6 @@ footer {
 // ─────────────────────────────────────────────────────────────
 // HELPERS
 // ─────────────────────────────────────────────────────────────
-
 function showError(msg) {
   const c = document.getElementById('errorContainer');
   const d = document.createElement('div');
@@ -568,62 +475,45 @@ function dayKey(dateStr) {
   const d = new Date(dateStr);
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
-
 function todayKey() { return dayKey(new Date()); }
-
 function tomorrowKey() {
-  const t = new Date();
-  t.setDate(t.getDate() + 1);
-  return dayKey(t);
-}
-
-function formatDayHeader(dateStr) {
-  const dk = dayKey(dateStr);
-  if (dk === todayKey()) return 'TODAY';
-  if (dk === tomorrowKey()) return 'TOMORROW';
-  return new Date(dateStr).toLocaleDateString('en-GB', {
-    weekday:'long', day:'numeric', month:'long'
-  }).toUpperCase();
+  const t = new Date(); t.setDate(t.getDate() + 1); return dayKey(t);
 }
 
 function formatTime(dateStr) {
-  return new Date(dateStr).toLocaleTimeString('en-GB', {
-    hour:'2-digit',
-    minute:'2-digit'
-  });
+  return new Date(dateStr).toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit' });
 }
-
 function formatTimeZone(dateStr) {
-  const str = new Date(dateStr).toLocaleTimeString('en-GB', {
-    timeZoneName:'short'
-  });
-  return str.split(' ').pop();
+  return new Date(dateStr).toLocaleTimeString('en-GB', { timeZoneName:'short' }).split(' ').pop();
 }
 
 function getCountdown(dateStr) {
   const diff = new Date(dateStr) - Date.now();
   if (diff <= 0) return { str:'● LIVE NOW', state:'live' };
-
   const d = Math.floor(diff / 86400000);
   const h = Math.floor((diff % 86400000) / 3600000);
   const m = Math.floor((diff % 3600000) / 60000);
   const s = Math.floor((diff % 60000) / 1000);
-
   const str = d > 0 ? `${d}D ${h}H ${m}M` : `${h}H ${m}M ${s}S`;
   return { str, state: diff < 3600000 ? 'soon' : 'upcoming' };
 }
 
 function parseFighters(title) {
-  if (!title) return null;
+  if (!title) return [null, null];
   const clean = title.replace(/^[^:]+:\s*/, '').trim();
   const m = clean.match(/^(.+?)\s+vs\.?\s+(.+)$/i);
   return m ? [m[1].trim(), m[2].trim()] : [clean, null];
 }
 
+function formatScheduleDate(dateStr) {
+  return new Date(dateStr).toLocaleDateString('en-GB', {
+    weekday:'short', day:'numeric', month:'short'
+  }).toUpperCase();
+}
+
 // ─────────────────────────────────────────────────────────────
 // FETCH
 // ─────────────────────────────────────────────────────────────
-
 async function fetchAllFights() {
   const res = await fetch('/api/fights');
   if (!res.ok) throw new Error(`API ${res.status}`);
@@ -631,11 +521,11 @@ async function fetchAllFights() {
 }
 
 // ─────────────────────────────────────────────────────────────
-// NORMALIZE
+// NORMALIZE — pass through id field
 // ─────────────────────────────────────────────────────────────
-
 function normalizeBoxing(raw) {
   return (raw || []).map(f => ({
+    id: f.id || '',
     type: 'Boxing',
     title: f.event || '',
     displayTitle: f.main_event || '',
@@ -648,6 +538,7 @@ function normalizeBoxing(raw) {
 
 function normalizeUFC(raw) {
   return (raw || []).map(f => ({
+    id: f.id || '',
     type: 'UFC',
     title: f.event || '',
     displayTitle: f.main_event || '',
@@ -658,26 +549,9 @@ function normalizeUFC(raw) {
   })).filter(f => f.date && f.displayTitle);
 }
 
-
-
-
-function formatScheduleDate(dateStr) {
-  return new Date(dateStr).toLocaleDateString('en-GB', {
-    weekday: 'short',
-    day: 'numeric',
-    month: 'short'
-  }).toUpperCase();
-}
-
-
-
-
-
-
 // ─────────────────────────────────────────────────────────────
 // HERO
 // ─────────────────────────────────────────────────────────────
-
 let intervals = [];
 
 function renderHero(events) {
@@ -694,8 +568,10 @@ function renderHero(events) {
     const [f1, f2] = parseFighters(event.displayTitle);
     if (!f1) return;
 
-    const card = document.createElement('div');
+    // Make the card a link
+    const card = document.createElement('a');
     card.className = 'hero-card';
+    card.href = `event.html?id=${encodeURIComponent(event.id)}`;
 
     const id = Math.random().toString(36).slice(2);
     const time = formatTime(event.date);
@@ -727,10 +603,8 @@ function renderHero(events) {
     function tick() {
       const el = document.getElementById(`cd-${id}`);
       if (!el) return;
-      const { str } = getCountdown(event.date);
-      el.textContent = str;
+      el.textContent = getCountdown(event.date).str;
     }
-
     tick();
     intervals.push(setInterval(tick, 1000));
 
@@ -741,7 +615,6 @@ function renderHero(events) {
 // ─────────────────────────────────────────────────────────────
 // SCHEDULE
 // ─────────────────────────────────────────────────────────────
-
 function renderSchedule(events) {
   const list = document.getElementById('scheduleList');
   list.innerHTML = '';
@@ -752,30 +625,34 @@ function renderSchedule(events) {
   }
 
   events.forEach(event => {
-    const row = document.createElement('div');
+    // Each row is now an <a> tag
+    const row = document.createElement('a');
     row.className = 'fight-row';
+    row.href = `event.html?id=${encodeURIComponent(event.id)}`;
 
     const [f1, f2] = parseFighters(event.displayTitle);
     const time = formatTime(event.date);
     const tz = formatTimeZone(event.date);
     const fightDate = formatScheduleDate(event.date);
+
     row.innerHTML = `
       <div>
         <span class="fight-sport ${event.type === 'UFC' ? 'sport-ufc' : 'sport-boxing'}">
           ${event.type}
         </span>
       </div>
-        <div class="fight-matchup">
-          <div class="fight-date">${fightDate}</div>
-          <div class="fight-fighters">${f1} ${f2 ? 'vs ' + f2 : ''}</div>
-          <div class="fight-event-name">${event.title}</div>
-        </div>
+      <div class="fight-matchup">
+        <div class="fight-date">${fightDate}</div>
+        <div class="fight-fighters">${f1}${f2 ? ' vs ' + f2 : ''}</div>
+        <div class="fight-event-name">${event.title}</div>
+      </div>
       <div class="fight-location">${event.venue}</div>
       <div class="fight-time">
         <span class="time-main">${time}</span>
         <span class="time-zone">${tz}</span>
       </div>
       <div class="fight-countdown">${getCountdown(event.date).str}</div>
+      <span class="row-arrow">↗</span>
     `;
 
     list.appendChild(row);
@@ -785,7 +662,6 @@ function renderSchedule(events) {
 // ─────────────────────────────────────────────────────────────
 // FILTER SYSTEM (7 / 30 DAYS)
 // ─────────────────────────────────────────────────────────────
-
 let allEvents = [];
 let selectedRange = 7;
 
@@ -811,16 +687,13 @@ function filterAndRender() {
   renderHero(upcoming.filter(e => dayKey(e.date) === firstDay));
   renderSchedule(upcoming);
 
-  document.getElementById('rangeLabel').textContent =
-    `Next ${selectedRange} days`;
+  document.getElementById('rangeLabel').textContent = `Next ${selectedRange} days`;
 }
 
 function setupToggle() {
-  const buttons = document.querySelectorAll('.range-btn');
-
-  buttons.forEach(btn => {
+  document.querySelectorAll('.range-btn').forEach(btn => {
     btn.addEventListener('click', () => {
-      buttons.forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.range-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       selectedRange = parseInt(btn.dataset.range);
       filterAndRender();
@@ -831,17 +704,14 @@ function setupToggle() {
 // ─────────────────────────────────────────────────────────────
 // INIT
 // ─────────────────────────────────────────────────────────────
-
 async function init() {
   try {
     const data = await fetchAllFights();
     const boxing = normalizeBoxing(data.boxing);
     const ufc = normalizeUFC(data.ufc);
-
     allEvents = [...boxing, ...ufc];
     filterAndRender();
     setupToggle();
-
   } catch (err) {
     console.error(err);
     showError(err.message);
@@ -852,4 +722,3 @@ init();
 </script>
 </body>
 </html>
-
