@@ -5,27 +5,44 @@ export async function onRequest(context) {
   let ufcData    = { error: null, data: [] };
   let boxingData = { error: null, data: [] };
 
-  // ── UFC (BallDontLie) ──
+  // ── UFC: fetch both "scheduled" and "upcoming" ──
   try {
-    const ufcRes = await fetch("https://api.balldontlie.io/mma/v1/events?status=upcoming&per_page=10", {
-      headers: {
-        "Authorization": UFC_KEY,
-        "Content-Type": "application/json"
-      }
+    const [res1, res2] = await Promise.all([
+      fetch("https://api.balldontlie.io/mma/v1/events?status=scheduled&per_page=25", {
+        headers: { "Authorization": UFC_KEY }
+      }),
+      fetch("https://api.balldontlie.io/mma/v1/events?status=upcoming&per_page=25", {
+        headers: { "Authorization": UFC_KEY }
+      })
+    ]);
+
+    const [data1, data2] = await Promise.all([
+      res1.json().catch(() => ({ data: [] })),
+      res2.json().catch(() => ({ data: [] }))
+    ]);
+
+    const combined = [...(data1.data || []), ...(data2.data || [])];
+    const seen = new Set();
+    const deduped = combined.filter(e => {
+      if (seen.has(e.id)) return false;
+      seen.add(e.id);
+      return true;
     });
-    const text = await ufcRes.text();
-    ufcData = JSON.parse(text);
+
+    deduped.sort((a, b) => new Date(a.date) - new Date(b.date));
+    ufcData = { data: deduped };
+
   } catch (err) {
     ufcData = { error: err.message, data: [] };
   }
 
-  // ── Boxing (RapidAPI) ──
+  // ── Boxing ──
   try {
-    const boxRes = await fetch("https://boxing-data.p.rapidapi.com/upcoming", {
+    const boxRes = await fetch("https://boxing-data-api.p.rapidapi.com/v1/events/?status=upcoming", {
       method: "GET",
       headers: {
         "X-RapidAPI-Key":  BOXING_KEY,
-        "X-RapidAPI-Host": "boxing-data.p.rapidapi.com"
+        "X-RapidAPI-Host": "boxing-data-api.p.rapidapi.com"
       }
     });
     const text = await boxRes.text();
