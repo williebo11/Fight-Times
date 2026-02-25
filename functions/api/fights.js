@@ -4,9 +4,6 @@ export async function onRequestGet(context) {
 
   const BOXING_API = "https://boxing-data-api.p.rapidapi.com/v1/events/schedule?days=7";
 
-  // SportRadar MMA upcoming schedule
-  const MMA_API = `https://api.sportradar.com/mma/trial/v2/en/schedules/upcoming/schedule.json?api_key=${SPORTRADAR_KEY}`;
-
   async function safeFetch(url, options = {}, timeoutMs = 10000) {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), timeoutMs);
@@ -16,39 +13,57 @@ export async function onRequestGet(context) {
       return res;
     } catch (err) {
       clearTimeout(timer);
-      console.warn(`safeFetch failed: ${err.message}`);
       return null;
     }
   }
 
-  const [mmaRes, boxingRes] = await Promise.all([
-    safeFetch(MMA_API),
+  // SportRadar MMA uses daily schedule — build next 7 days
+  const dates = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date();
+    d.setDate(d.getDate() + i);
+    return d.toISOString().split('T')[0]; // "YYYY-MM-DD"
+  });
+
+  const sportradarHeaders = {
+    "x-api-key": SPORTRADAR_KEY,
+    "accept": "application/json",
+  };
+
+  // Fire all requests in parallel
+  const [boxingRes, ...mmaResponses] = await Promise.all([
     safeFetch(BOXING_API, {
       headers: {
         "X-RapidAPI-Key":  RAPID_KEY,
         "X-RapidAPI-Host": "boxing-data-api.p.rapidapi.com",
       },
     }),
+    ...dates.map(date =>
+      safeFetch(
+        `https://api.sportradar.com/mma/trial/v2/en/schedules/${date}/schedule.json`,
+        { headers: sportradarHeaders }
+      )
+    ),
   ]);
 
-  // Read MMA raw so we can see the exact shape
-  let mmaRaw = null;
-  if (mmaRes) {
-    const text = await mmaRes.text();
-    try { mmaRaw = JSON.parse(text); } catch(e) { mmaRaw = text; }
-  }
+  // Read all MMA responses raw
+  const mmaDebug = await Promise.all(
+    mmaResponses.map(async (res, i) => {
+      if (!res) return { date: dates[i], status: null, error: "no response" };
+      const text = await res.text();
+      let data;
+      try { data = JSON.parse(text); } catch(e) { data = text; }
+      return { date: dates[i], status: res.status, data };
+    })
+  );
 
-  // Boxing (working)
+  // Boxing
   let boxingData = [];
   if (boxingRes && boxingRes.ok) {
     try { boxingData = await boxingRes.json(); } catch(e) {}
   }
 
   return new Response(
-    JSON.stringify({
-      _mmaDebug: { status: mmaRes?.status, data: mmaRaw },
-      boxing: boxingData,
-    }, null, 2),
+    JSON.stringify({ _mmaDebug: mmaDebug, boxing: boxingData }, null, 2),
     { headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" } }
   );
 }
