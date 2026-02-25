@@ -432,7 +432,11 @@ footer {
 <section class="schedule-section">
   <div class="schedule-header">
     <h2 class="schedule-title">This Week</h2>
-    <span class="schedule-sub">Next 7 days</span>
+  <div class="range-toggle">
+    <button class="range-btn active" data-range="7">7 DAYS</button>
+    <button class="range-btn" data-range="30">30 DAYS</button>
+  </div>
+    <span class="schedule-sub" id="rangeLabel">Next 7 days</span>
   </div>
   <div id="scheduleList">
     <div class="state-box"><div class="spinner"></div></div>
