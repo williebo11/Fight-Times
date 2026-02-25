@@ -25,7 +25,6 @@ export async function onRequestGet(context) {
 
   // Correct URL format: summaries.json with api_key as query param
   const MMA_URL = `https://api.sportradar.com/mma/trial/v2/en/competitions/sr:competition:50052/seasons.json?api_key=${SPORTRADAR_KEY}`;
-
   const [boxingRes, mmaRes] = await Promise.all([
     safeFetch(BOXING_API, {
       headers: {
