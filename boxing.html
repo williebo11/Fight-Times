@@ -20,164 +20,34 @@
   --muted:#666;
   --border:rgba(255,255,255,0.06);
 }
-
 *{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);}
 
-body{
-  font-family:'Barlow',sans-serif;
-  background:var(--bg);
-  color:var(--text);
-}
-
-header{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  padding:1.4rem 3rem;
-  border-bottom:1px solid var(--border);
-  position:sticky;
-  top:0;
-  background:rgba(8,8,8,.95);
-  backdrop-filter:blur(10px);
-}
-
-.logo{
-  font-family:'Bebas Neue',sans-serif;
-  font-size:1.9rem;
-  letter-spacing:.1em;
-}
-.logo span{color:var(--red)}
-
-nav{
-  display:flex;
-  gap:2.5rem; /* ⬅ controls spacing between Home / UFC / Boxing */
-}
-
-
-
-
-nav a{
-  font-family:'Barlow Condensed',sans-serif;
-  text-transform:uppercase;
-  font-weight:700;
-  font-size:.85rem;
-  letter-spacing:.18em;
-  color:var(--muted);
-  text-decoration:none;
-}
+header{display:flex;justify-content:space-between;align-items:center;padding:1.4rem 3rem;border-bottom:1px solid var(--border);position:sticky;top:0;background:rgba(8,8,8,.95);backdrop-filter:blur(10px);}
+.logo{font-family:'Bebas Neue',sans-serif;font-size:1.9rem;} .logo span{color:var(--red)}
+nav{display:flex;gap:2.5rem;}
+nav a{font-family:'Barlow Condensed',sans-serif;text-transform:uppercase;font-weight:700;font-size:.85rem;letter-spacing:.18em;color:var(--muted);text-decoration:none;}
 nav a:hover{color:var(--text)}
 
-.page-section{
-  max-width:900px;
-  margin:0 auto;
-  padding:3rem 2rem 5rem;
-}
+.page-section{max-width:900px;margin:0 auto;padding:3rem 2rem 5rem;}
+.page-title{font-family:'Bebas Neue',sans-serif;font-size:3rem;letter-spacing:.05em;margin-bottom:2rem;}
 
-.page-title{
-  font-family:'Bebas Neue',sans-serif;
-  font-size:3rem;
-  letter-spacing:.05em;
-  margin-bottom:2rem;
-}
+.boxing-list{display:flex;flex-direction:column;gap:2px;background:var(--border);border:1px solid var(--border);}
+.boxing-card{background:var(--surface);padding:2.5rem 2.8rem;position:relative;transition:.25s;text-decoration:none;color:inherit;cursor:pointer;display:block;}
+.boxing-card:hover{background:var(--surface2);}
+.boxing-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--gold),transparent);}
 
-.boxing-list{
-  display:flex;
-  flex-direction:column;
-  gap:2px;
-  background:var(--border);
-  border:1px solid var(--border);
-}
+.boxing-date{font-family:'Barlow Condensed',sans-serif;font-size:1.5rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:.8rem;}
+.boxing-fighters{font-family:'Bebas Neue',sans-serif;font-size:2.2rem;letter-spacing:.04em;margin-bottom:1rem;}
+.boxing-event{font-family:'Barlow Condensed',sans-serif;font-size:1.25rem;font-weight:700;margin-bottom:.6rem;}
+.boxing-location{font-size:1rem;color:var(--muted);margin-bottom:1.2rem;}
+.boxing-meta{display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--border);padding-top:1rem;}
+.boxing-time{font-family:'Barlow Condensed',sans-serif;font-size:1.2rem;font-weight:700;}
+.boxing-timezone{font-size:.85rem;color:var(--muted);}
+.boxing-countdown{font-family:'Bebas Neue',sans-serif;font-size:1.8rem;color:var(--gold);}
 
-.boxing-card{
-  background:var(--surface);
-  padding:2.5rem 2.8rem;
-  position:relative;
-  transition:.25s;
-}
-
-.boxing-card:hover{
-  background:var(--surface2);
-}
-
-.boxing-card::before{
-  content:'';
-  position:absolute;
-  top:0;
-  left:0;
-  right:0;
-  height:3px;
-  background:linear-gradient(90deg,var(--gold),transparent);
-}
-
-.boxing-date{
-  font-family:'Barlow Condensed',sans-serif;
-  font-size:1.5rem;
-  font-weight:700;
-  letter-spacing:.2em;
-  text-transform:uppercase;
-  color:var(--gold);
-  margin-bottom:.8rem;
-}
-
-.boxing-fighters{
-  font-family:'Bebas Neue',sans-serif;
-  font-size:2.2rem;
-  letter-spacing:.04em;
-  margin-bottom:1rem;
-}
-
-.boxing-event{
-  font-family:'Barlow Condensed',sans-serif;
-  font-size:1.25rem;
-  font-weight:700;
-  margin-bottom:.6rem;
-}
-
-.boxing-location{
-  font-size:1rem;
-  color:var(--muted);
-  margin-bottom:1.2rem;
-}
-
-.boxing-meta{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  border-top:1px solid var(--border);
-  padding-top:1rem;
-}
-
-.boxing-time{
-  font-family:'Barlow Condensed',sans-serif;
-  font-size:1.2rem;
-  font-weight:700;
-}
-
-.boxing-timezone{
-  font-size:.85rem;
-  color:var(--muted);
-}
-
-.boxing-countdown{
-  font-family:'Bebas Neue',sans-serif;
-  font-size:1.8rem;
-  color:var(--gold);
-}
-
-.state-box{
-  padding:3rem;
-  text-align:center;
-  color:var(--muted);
-  font-family:'Barlow Condensed',sans-serif;
-}
-
-@media(max-width:700px){
-  .boxing-meta{
-    flex-direction:column;
-    align-items:flex-start;
-    gap:.5rem;
-  }
-}
+.state-box{padding:3rem;text-align:center;color:var(--muted);font-family:'Barlow Condensed',sans-serif;}
+@media(max-width:700px){.boxing-meta{flex-direction:column;align-items:flex-start;gap:.5rem;}}
 </style>
 </head>
 <body>
@@ -199,53 +69,28 @@ nav a:hover{color:var(--text)}
 
 <script>
 // Helpers
-
 function formatDate(dateStr){
-  return new Date(dateStr).toLocaleDateString('en-GB',{
-    weekday:'long',
-    day:'numeric',
-    month:'long',
-    year:'numeric'
-  }).toUpperCase();
+  return new Date(dateStr).toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'}).toUpperCase();
 }
-
 function formatTime(dateStr){
-  return new Date(dateStr).toLocaleTimeString('en-GB',{
-    hour:'2-digit',
-    minute:'2-digit'
-  });
+  return new Date(dateStr).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
 }
-
-function getTimezone(){
-  return Intl.DateTimeFormat().resolvedOptions().timeZone;
-}
-
-function startCountdown(element, dateStr){
+function getTimezone(){return Intl.DateTimeFormat().resolvedOptions().timeZone;}
+function startCountdown(element,dateStr){
   function update(){
-    const diff = new Date(dateStr) - Date.now();
-
-    if(diff <= 0){
-      element.innerHTML = "● LIVE";
-      return;
-    }
-
-    const days = Math.floor(diff / 86400000);
-    const hours = Math.floor((diff % 86400000) / 3600000);
-    const minutes = Math.floor((diff % 3600000) / 60000);
-    const seconds = Math.floor((diff % 60000) / 1000);
-
-    element.innerHTML =
-      `${days}D ${hours.toString().padStart(2,'0')}H ` +
-      `${minutes.toString().padStart(2,'0')}M ` +
-      `${seconds.toString().padStart(2,'0')}S`;
+    const diff=new Date(dateStr)-Date.now();
+    if(diff<=0){element.innerHTML="● LIVE";return;}
+    const days=Math.floor(diff/86400000);
+    const hours=Math.floor((diff%86400000)/3600000);
+    const minutes=Math.floor((diff%3600000)/60000);
+    const seconds=Math.floor((diff%60000)/1000);
+    element.innerHTML=`${days}D ${hours.toString().padStart(2,'0')}H ${minutes.toString().padStart(2,'0')}M ${seconds.toString().padStart(2,'0')}S`;
   }
-
   update();
-  setInterval(update, 1000);
+  setInterval(update,1000);
 }
 
 // Fetch Boxing Only
-
 async function fetchBoxing(){
   const res = await fetch('/api/fights');
   if(!res.ok) throw new Error("API Error");
@@ -254,35 +99,31 @@ async function fetchBoxing(){
 }
 
 // Render
-
 async function init(){
   try{
-    const fights = await fetchBoxing();
-    const list = document.getElementById('boxingList');
-    list.innerHTML = '';
+    const fights=await fetchBoxing();
+    const list=document.getElementById('boxingList');
+    list.innerHTML='';
 
-    const now = new Date();
-    const upcoming = fights.filter(f => new Date(f.date) > now);
+    const now=new Date();
+    const upcoming=fights.filter(f=>new Date(f.date)>now);
 
     if(!upcoming.length){
-      list.innerHTML =
-        '<div class="state-box">No upcoming Boxing fights.</div>';
+      list.innerHTML='<div class="state-box">No upcoming Boxing fights.</div>';
       return;
     }
 
-    upcoming
-      .sort((a,b)=>new Date(a.date)-new Date(b.date))
-      .forEach(f => {
+    upcoming.sort((a,b)=>new Date(a.date)-new Date(b.date))
+      .forEach(f=>{
+        const card=document.createElement('a'); // <-- Changed to <a> for clickable
+        card.className='boxing-card';
+        card.href=`event.html?id=${encodeURIComponent(f.id)}`;
 
-        const card = document.createElement('div');
-        card.className = 'boxing-card';
-
-        card.innerHTML = `
+        card.innerHTML=`
           <div class="boxing-date">${formatDate(f.date)}</div>
           <div class="boxing-fighters">${f.main_event}</div>
           <div class="boxing-event">${f.event || 'Boxing Event'}</div>
           <div class="boxing-location">${f.venue || 'Location TBA'}</div>
-
           <div class="boxing-meta">
             <div>
               <div class="boxing-time">${formatTime(f.date)}</div>
@@ -291,16 +132,12 @@ async function init(){
             <div class="boxing-countdown"></div>
           </div>
         `;
-
         list.appendChild(card);
-
-        const countdownEl = card.querySelector('.boxing-countdown');
-        startCountdown(countdownEl, f.date);
+        startCountdown(card.querySelector('.boxing-countdown'), f.date);
       });
-
   }catch(err){
-    document.getElementById('boxingList').innerHTML =
-      '<div class="state-box">Error loading Boxing fights.</div>';
+    document.getElementById('boxingList').innerHTML='<div class="state-box">Error loading Boxing fights.</div>';
+    console.error(err);
   }
 }
 
