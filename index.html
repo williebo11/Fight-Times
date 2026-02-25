@@ -1,590 +1,1005 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
+<meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Fight Times – UFC & Boxing Schedules</title>
-
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:ital,wght@0,400;0,600;0,700;0,900;1,700&family=Barlow:wght@400;500&display=swap" rel="stylesheet">
 
 <style>
 :root {
-  --bg: #0a0a0f;
-  --card: #111118;
-  --accent: #e63946;
-  --accent-dark: #b32d38;
-  --text: #e0e0ff;
-  --text-muted: #a0a0cc;
-  --border: rgba(230,57,70,0.2);
+  --bg: #080808;
+  --surface: #111;
+  --surface2: #1a1a1a;
+  --red: #e8003d;
+  --red-glow: rgba(232,0,61,0.35);
+  --gold: #f5c842;
+  --text: #f0f0f0;
+  --muted: #888;
+  --border: rgba(255,255,255,0.07);
 }
 
-* { margin:0; padding:0; box-sizing:border-box; }
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+html { scroll-behavior: smooth; }
 
 body {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Barlow', sans-serif;
   background: var(--bg);
   color: var(--text);
-  min-height:100vh;
-  background-image:
-    radial-gradient(circle at 10% 20%, rgba(230,57,70,0.08), transparent 30%),
-    radial-gradient(circle at 90% 80%, rgba(230,57,70,0.06), transparent 40%);
-  scroll-behavior: smooth;
+  min-height: 100vh;
+  overflow-x: hidden;
 }
 
+/* ─── NOISE GRAIN ─────────────────────────────────────────────────────────── */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.4;
+}
+
+/* ─── HEADER ──────────────────────────────────────────────────────────────── */
 header {
-  padding: 4rem 2rem 2rem;
-  text-align:center;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem 3rem;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  background: rgba(8,8,8,0.92);
+  backdrop-filter: blur(12px);
+  z-index: 100;
 }
 
-h1 {
-  font-family: 'Orbitron', sans-serif;
-  font-size: clamp(3rem, 10vw, 6rem);
-  background: linear-gradient(90deg,#e63946,#ff7b86);
-  -webkit-background-clip:text;
-  -webkit-text-fill-color:transparent;
+.logo {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 2rem;
+  letter-spacing: 0.08em;
+  color: var(--text);
 }
 
-.tagline {
-  color: var(--text-muted);
-  margin-top:1rem;
-  font-size:1.2rem;
+.logo span { color: var(--red); }
+
+nav { display: flex; gap: 2.5rem; }
+
+nav a {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 600;
+  font-size: 0.95rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-decoration: none;
+  transition: color 0.2s;
 }
 
-.featured {
-  padding: 3rem 1rem 4rem;
-  text-align:center;
+nav a:hover { color: var(--text); }
+
+/* ─── HERO ────────────────────────────────────────────────────────────────── */
+.hero {
   position: relative;
+  min-height: 92vh;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  overflow: hidden;
 }
 
-.featured::before {
-  content:"";
-  position:absolute;
-  top:0; left:50%; transform:translateX(-50%);
-  width:120%; height:100%;
-  background: url('https://images.unsplash.com/photo-1585079541545-bfa10e6c61a0?auto=format&fit=crop&q=80&w=1400');
-  background-size:cover;
-  background-position:center;
-  filter:blur(30px) brightness(0.3);
-  z-index:0;
+.hero-bg {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 60% 80% at 20% 50%, rgba(232,0,61,0.12), transparent),
+    radial-gradient(ellipse 50% 70% at 80% 50%, rgba(232,0,61,0.06), transparent);
 }
 
-.featured-title {
-  font-family:'Orbitron';
-  font-size:2.2rem;
-  margin-bottom:2rem;
+/* Diagonal split line */
+.hero::after {
+  content: '';
+  position: absolute;
+  top: 0; bottom: 0;
+  left: 50%;
+  width: 2px;
+  background: linear-gradient(to bottom, transparent, var(--red), transparent);
+  transform: skewX(-3deg);
+  z-index: 2;
+}
+
+.hero-left {
   position: relative;
-  z-index:1;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 5rem 4rem 5rem 5rem;
 }
 
-.featured-card {
-  max-width:900px;
-  margin:auto;
-  padding:2.5rem;
-  border-radius:20px;
-  background: linear-gradient(145deg,#141420,#0f0f18);
-  border:1px solid var(--border);
-  box-shadow:0 30px 80px rgba(230,57,70,0.15);
-  position:relative;
-  overflow:hidden;
-  z-index:1;
+.hero-right {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-end;
+  padding: 5rem 5rem 5rem 4rem;
+  text-align: right;
 }
 
-.fighters {
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  gap:3rem;
-  margin-bottom:2rem;
+.fight-label {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 0.8rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--red);
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
 }
 
-.fighters img {
-  width:150px;
-  height:150px;
-  object-fit:cover;
-  border-radius:50%;
-  border:3px solid var(--accent);
-  transition:0.3s ease;
-  background: #1a1a2e;
-}
-
-.fighters img:hover {
-  transform:scale(1.05);
-}
-
-.vs {
-  font-size:2rem;
-  font-weight:700;
-  color:var(--accent);
-}
-
-.event-title {
-  font-size:1.6rem;
-  margin-bottom:0.5rem;
-}
-
-.event-date {
-  color:var(--text-muted);
-  margin-bottom:1rem;
-}
-
-.status-badge {
-  display:inline-block;
-  padding:6px 14px;
-  border-radius:30px;
-  font-size:0.9rem;
-  font-weight:700;
-  margin-bottom:1rem;
-}
-
-.badge-live { background:#ff3b3b; color:white; }
-.badge-upcoming { background:#ffdd57; color:black; }
-
-.countdown {
-  font-size:1.8rem;
-  font-weight:700;
-  color:#ffdd57;
-  letter-spacing:1px;
-  margin-bottom:1rem;
-}
-
-.progress-bar {
-  height:8px;
-  width:100%;
-  background:#1c1c2a;
-  border-radius:20px;
-  margin:1rem 0 2rem;
-  overflow:hidden;
-}
-
-.progress-fill {
-  height:100%;
-  width:0%;
-  background:linear-gradient(90deg,#e63946,#ff7b86);
-  transition:width 1s linear;
-}
-
-.upcoming-list {
-  text-align:left;
-  margin-top:2rem;
-}
-
-.upcoming-list h3 {
-  margin-bottom:1rem;
-  font-size:1.2rem;
-  color:#ffdd57;
-}
-
-.date-group { margin-top:1rem; }
-
-.date-group h4 {
-  font-size:1rem;
-  margin-bottom:0.5rem;
-  color:#a0a0cc;
-}
-
-.mini-fight {
-  padding:0.7rem 0;
-  border-bottom:1px solid rgba(255,255,255,0.1);
-  font-size:0.95rem;
-}
-
-.mini-fight:last-child { border:none; }
-
-.live {
-  color:#ff3b3b;
-  animation: pulse 1s infinite;
-}
-
-@keyframes pulse {
-  0% { opacity:1; }
-  50% { opacity:0.4; }
-  100% { opacity:1; }
-}
-
-.api-error {
-  background: rgba(230,57,70,0.1);
-  border: 1px solid rgba(230,57,70,0.3);
-  border-radius: 8px;
-  padding: 1rem;
-  margin-top: 1rem;
-  font-size: 0.9rem;
-  color: #ff9aa2;
-}
-
-.loading-spinner {
-  display: inline-block;
-  width: 20px;
-  height: 20px;
-  border: 2px solid rgba(230,57,70,0.3);
-  border-top-color: var(--accent);
+.fight-label .dot {
+  width: 6px; height: 6px;
   border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-  margin-right: 8px;
-  vertical-align: middle;
+  background: var(--red);
+  animation: pulse-dot 1.4s ease-in-out infinite;
 }
 
-@keyframes spin {
-  to { transform: rotate(360deg); }
+@keyframes pulse-dot {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.6); opacity: 0.5; }
 }
 
-.cards {
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
-  gap:2rem;
-  padding:0 2rem 4rem;
-  max-width:1200px;
-  margin:auto;
+.hero-right .fight-label {
+  justify-content: flex-end;
 }
 
-.card {
-  background:var(--card);
-  border-radius:16px;
-  overflow:hidden;
-  border:1px solid var(--border);
-  transition:0.4s;
-  box-shadow:0 10px 30px rgba(0,0,0,0.5);
+.fighter-name {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(4rem, 9vw, 8rem);
+  line-height: 0.9;
+  letter-spacing: 0.02em;
+  color: var(--text);
+  text-shadow: 0 0 80px rgba(232,0,61,0.2);
 }
 
-.card:hover {
-  transform:translateY(-10px);
-  border-color:var(--accent);
-  box-shadow:0 20px 50px rgba(230,57,70,0.25);
+.fighter-record {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  margin-top: 0.8rem;
+  text-transform: uppercase;
 }
 
-.card-img {
-  height:240px;
-  background-size:cover;
-  background-position:center;
-  filter:brightness(0.8);
+.hero-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10;
+  text-align: center;
 }
 
-.card-body { padding:2rem; }
-
-.card h2 {
-  font-size:2rem;
-  margin-bottom:1rem;
+.vs-badge {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 3rem;
+  color: var(--bg);
+  background: var(--red);
+  width: 80px; height: 80px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 40px var(--red-glow), 0 0 80px rgba(232,0,61,0.15);
+  letter-spacing: 0.02em;
 }
 
-.card p {
-  color:var(--text-muted);
-  margin-bottom:1.5rem;
+/* Event info bar */
+.hero-info-bar {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  z-index: 20;
+  display: flex;
+  align-items: stretch;
+  border-top: 1px solid var(--border);
+  background: rgba(8,8,8,0.85);
+  backdrop-filter: blur(8px);
 }
 
-.btn {
-  display:inline-block;
-  background:var(--accent);
-  padding:0.8rem 1.8rem;
-  border-radius:50px;
-  color:white;
-  text-decoration:none;
-  font-weight:600;
-  transition:0.3s;
+.info-cell {
+  flex: 1;
+  padding: 1.4rem 2rem;
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
 }
 
-.btn:hover {
-  background:var(--accent-dark);
-  transform:scale(1.05);
+.info-cell:last-child { border-right: none; }
+
+.info-label {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted);
 }
 
+.info-value {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: 0.04em;
+}
+
+.info-value.highlight { color: var(--gold); }
+
+/* Countdown display */
+#heroCountdown {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.5rem;
+  letter-spacing: 0.08em;
+  color: var(--gold);
+}
+
+/* Poster image in hero */
+.poster-wrap {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+}
+
+.poster-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  opacity: 0.18;
+  filter: saturate(0.4);
+}
+
+/* ─── SECTION TITLE ───────────────────────────────────────────────────────── */
+.section-header {
+  display: flex;
+  align-items: baseline;
+  gap: 1.5rem;
+  padding: 4rem 5rem 2rem;
+}
+
+.section-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 3.5rem;
+  letter-spacing: 0.04em;
+}
+
+.section-sub {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* ─── FIGHT CARDS GRID ────────────────────────────────────────────────────── */
+.fight-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  gap: 1px;
+  background: var(--border);
+  margin: 0 5rem 6rem;
+  border: 1px solid var(--border);
+}
+
+.fight-card {
+  background: var(--surface);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+  cursor: pointer;
+  transition: background 0.25s;
+}
+
+.fight-card:hover { background: var(--surface2); }
+
+.fight-card:hover .card-accent-line {
+  width: 100%;
+}
+
+.card-accent-line {
+  height: 2px;
+  width: 0;
+  background: var(--red);
+  transition: width 0.4s ease;
+  position: absolute;
+  top: 0; left: 0;
+}
+
+.card-poster {
+  height: 200px;
+  overflow: hidden;
+  position: relative;
+}
+
+.card-poster img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
+  transition: transform 0.5s ease;
+  filter: brightness(0.85);
+}
+
+.fight-card:hover .card-poster img {
+  transform: scale(1.04);
+}
+
+.card-poster-fallback {
+  height: 200px;
+  background: linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.card-poster-fallback .sport-icon {
+  font-size: 3rem;
+  opacity: 0.15;
+}
+
+.card-body {
+  padding: 1.5rem 1.8rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.card-sport-tag {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--red);
+}
+
+.card-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 900;
+  line-height: 1.1;
+  color: var(--text);
+  letter-spacing: 0.02em;
+}
+
+.card-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-top: auto;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+
+.card-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.card-meta-row svg {
+  flex-shrink: 0;
+  opacity: 0.5;
+}
+
+.card-countdown {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.3rem;
+  color: var(--gold);
+  letter-spacing: 0.06em;
+}
+
+.card-broadcaster {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: rgba(255,255,255,0.06);
+  padding: 0.25rem 0.7rem;
+  border-radius: 3px;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--text);
+  text-transform: uppercase;
+  margin-top: 0.4rem;
+  align-self: flex-start;
+}
+
+/* ─── STATUS PILL ─────────────────────────────────────────────────────────── */
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.2rem 0.8rem;
+  border-radius: 2px;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+.pill-live {
+  background: var(--red);
+  color: white;
+}
+
+.pill-live::before {
+  content: '';
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: white;
+  animation: pulse-dot 1s infinite;
+}
+
+.pill-soon { background: var(--gold); color: #111; }
+.pill-upcoming { background: rgba(255,255,255,0.1); color: var(--muted); }
+
+/* ─── SECTION DIVIDER ─────────────────────────────────────────────────────── */
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 1rem 5rem;
+  margin-bottom: 1rem;
+}
+
+.divider-line {
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.divider-label {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* ─── NAV CARDS ───────────────────────────────────────────────────────────── */
+.nav-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  margin: 0 5rem;
+  background: var(--border);
+  border: 1px solid var(--border);
+}
+
+.nav-card {
+  background: var(--surface);
+  padding: 3rem;
+  text-decoration: none;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  min-height: 220px;
+  position: relative;
+  overflow: hidden;
+  transition: background 0.25s;
+}
+
+.nav-card:hover { background: var(--surface2); }
+
+.nav-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  opacity: 0;
+  transition: opacity 0.4s;
+}
+
+.nav-card:hover::before { opacity: 0.06; }
+
+.nav-card-ufc::before {
+  background-image: url('UFC-bg.jpg');
+}
+
+.nav-card-boxing::before {
+  background-image: url('https://images.unsplash.com/photo-1552072092-7f9b8d63efcb?auto=format&fit=crop&q=80&w=1200');
+}
+
+.nav-card-content {
+  position: relative;
+  z-index: 1;
+}
+
+.nav-card-label {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 0.6rem;
+}
+
+.nav-card-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 3.5rem;
+  letter-spacing: 0.04em;
+  color: var(--text);
+  line-height: 1;
+}
+
+.nav-card-arrow {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 2rem;
+  color: var(--red);
+  position: relative;
+  z-index: 1;
+  transition: transform 0.25s;
+}
+
+.nav-card:hover .nav-card-arrow {
+  transform: translate(4px, -4px);
+}
+
+/* ─── FOOTER ──────────────────────────────────────────────────────────────── */
 footer {
-  text-align:center;
-  padding:3rem 1rem;
-  color:var(--text-muted);
-  border-top:1px solid var(--border);
+  margin-top: 6rem;
+  padding: 2.5rem 5rem;
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
-[data-animate] {
-  opacity:0;
-  transform: translateY(20px);
-  transition: all 0.6s ease-out;
+.footer-logo {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.4rem;
+  letter-spacing: 0.08em;
+  color: var(--muted);
 }
 
-[data-animate].visible {
-  opacity:1;
-  transform: translateY(0);
+.footer-logo span { color: var(--red); }
+
+.footer-copy {
+  font-size: 0.8rem;
+  color: var(--muted);
+  letter-spacing: 0.05em;
+}
+
+/* ─── LOADING ─────────────────────────────────────────────────────────────── */
+.loading-state {
+  padding: 5rem;
+  text-align: center;
+  color: var(--muted);
+}
+
+.spinner {
+  width: 32px; height: 32px;
+  border: 2px solid rgba(232,0,61,0.2);
+  border-top-color: var(--red);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  margin: 0 auto 1rem;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ─── ERROR STATE ─────────────────────────────────────────────────────────── */
+.error-notice {
+  background: rgba(232,0,61,0.07);
+  border: 1px solid rgba(232,0,61,0.2);
+  border-radius: 4px;
+  padding: 0.8rem 1.2rem;
+  font-size: 0.85rem;
+  color: #ff6b6b;
+  margin: 1rem 5rem;
+  font-family: 'Barlow Condensed', sans-serif;
+  letter-spacing: 0.04em;
+}
+
+/* ─── RESPONSIVE ──────────────────────────────────────────────────────────── */
+@media (max-width: 900px) {
+  header { padding: 1.2rem 1.5rem; }
+  nav { gap: 1.5rem; }
+
+  .hero { grid-template-columns: 1fr; min-height: auto; }
+  .hero::after { display: none; }
+  .hero-left, .hero-right { padding: 3rem 2rem 2rem; text-align: center; align-items: center; }
+  .hero-right { padding-top: 0; border-top: 1px solid var(--border); }
+  .hero-right .fight-label { justify-content: center; }
+  .hero-center { position: static; transform: none; padding: 1.5rem 0; }
+  .hero-info-bar { position: static; flex-wrap: wrap; }
+  .info-cell { min-width: 50%; border-bottom: 1px solid var(--border); }
+
+  .section-header, .divider, footer { padding-left: 1.5rem; padding-right: 1.5rem; }
+  .fight-grid, .nav-cards { margin: 0 1.5rem 4rem; }
+  .nav-cards { grid-template-columns: 1fr; }
+  .error-notice { margin: 1rem 1.5rem; }
+  .fighter-name { font-size: clamp(3rem, 12vw, 5rem); }
+}
+
+/* ─── ENTRANCE ANIMATIONS ─────────────────────────────────────────────────── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.hero-left  { animation: fadeUp 0.7s ease both; }
+.hero-right { animation: fadeUp 0.7s 0.15s ease both; }
+.hero-info-bar { animation: fadeUp 0.7s 0.3s ease both; }
+
+.fight-card {
+  animation: fadeUp 0.5s ease both;
 }
 </style>
 </head>
-
 <body>
 
+<!-- ─── HEADER ─────────────────────────────────────────────────────────────── -->
 <header>
-  <h1>Fight Times</h1>
-  <p class="tagline">Real-time major UFC & Boxing schedules – Stay in the fight.</p>
+  <div class="logo">Fight<span>Times</span></div>
+  <nav>
+    <a href="ufc.html">UFC</a>
+    <a href="boxing.html">Boxing</a>
+  </nav>
 </header>
 
-<section class="featured">
-  <div class="featured-title">🔥 Next Big Fight</div>
+<!-- ─── HERO (populated by JS) ────────────────────────────────────────────── -->
+<section class="hero" id="heroSection">
+  <div class="hero-bg"></div>
 
-  <div class="featured-card" data-animate="fade">
-    <div class="fighters">
-      <img id="fighter1" src="UFC-bg.jpg" onerror="this.src='https://via.placeholder.com/150x150/1a1a2e/e63946?text=Fighter+1'">
-      <div class="vs">VS</div>
-      <img id="fighter2" src="UFC-bg.jpg" onerror="this.src='https://via.placeholder.com/150x150/1a1a2e/e63946?text=Fighter+2'">
+  <!-- Poster bg -->
+  <div class="poster-wrap" id="heroPosterWrap" style="display:none">
+    <img id="heroPosterImg" src="" alt="">
+  </div>
+
+  <div class="hero-left">
+    <div class="fight-label">
+      <span class="dot"></span>
+      <span id="heroSportLabel">Next Fight</span>
     </div>
+    <div class="fighter-name" id="heroFighter1">—</div>
+    <div class="fighter-record" id="heroEvent" style="margin-top:1rem;color:var(--muted);font-size:1rem;">Loading...</div>
+  </div>
 
-    <div class="event-title" id="eventTitle">
-      <span class="loading-spinner"></span> Loading event...
+  <div class="hero-center">
+    <div class="vs-badge">VS</div>
+  </div>
+
+  <div class="hero-right">
+    <div class="fight-label">
+      <span class="dot"></span>
+      <span id="heroSportLabel2">Upcoming</span>
     </div>
-    <div class="event-date" id="eventDate"></div>
-    <div id="statusBadge" class="status-badge"></div>
+    <div class="fighter-name" id="heroFighter2">—</div>
+    <div class="fighter-record" id="heroStatus" style="margin-top:1rem;">—</div>
+  </div>
 
-    <div class="countdown" id="countdown"></div>
-    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
-
-    <div class="upcoming-list">
-      <h3>Next 7 Days</h3>
-      <div id="nextFights"><span class="loading-spinner"></span> Fetching fights...</div>
+  <div class="hero-info-bar">
+    <div class="info-cell">
+      <div class="info-label">Event</div>
+      <div class="info-value" id="heroEventName">—</div>
     </div>
-
-    <div id="apiErrors"></div>
+    <div class="info-cell">
+      <div class="info-label">Date</div>
+      <div class="info-value" id="heroDate">—</div>
+    </div>
+    <div class="info-cell">
+      <div class="info-label">Location</div>
+      <div class="info-value" id="heroLocation">—</div>
+    </div>
+    <div class="info-cell">
+      <div class="info-label">Countdown</div>
+      <div id="heroCountdown">—</div>
+    </div>
   </div>
 </section>
 
-<div class="cards">
-  <div class="card" data-animate="fade">
-    <div class="card-img" style="background-image:url('UFC-bg.jpg');"></div>
-    <div class="card-body">
-      <h2>UFC Schedule</h2>
-      <p>Upcoming UFC events, Fight Nights, numbered cards – updated automatically.</p>
-      <a href="ufc.html" class="btn">View UFC Schedule</a>
-    </div>
-  </div>
+<!-- ─── ERRORS ─────────────────────────────────────────────────────────────── -->
+<div id="errorContainer"></div>
 
-  <div class="card" data-animate="fade">
-    <div class="card-img"
-      style="background-image:url('https://images.unsplash.com/photo-1552072092-7f9b8d63efcb?auto=format&fit=crop&q=80&w=1200');">
-    </div>
-    <div class="card-body">
-      <h2>Boxing Schedule</h2>
-      <p>Major title fights, big names – curated and updated regularly.</p>
-      <a href="boxing.html" class="btn">View Boxing Schedule</a>
-    </div>
+<!-- ─── UPCOMING FIGHTS GRID ───────────────────────────────────────────────── -->
+<div class="section-header">
+  <h2 class="section-title">Upcoming Events</h2>
+  <span class="section-sub">Next 30 days</span>
+</div>
+
+<div class="fight-grid" id="fightGrid">
+  <div class="loading-state" style="grid-column:1/-1">
+    <div class="spinner"></div>
+    Loading events...
   </div>
 </div>
 
+<!-- ─── DIVIDER ─────────────────────────────────────────────────────────────── -->
+<div class="divider">
+  <div class="divider-line"></div>
+  <div class="divider-label">Browse by sport</div>
+  <div class="divider-line"></div>
+</div>
+
+<!-- ─── NAV CARDS ─────────────────────────────────────────────────────────── -->
+<div class="nav-cards">
+  <a href="ufc.html" class="nav-card nav-card-ufc">
+    <div class="nav-card-content">
+      <div class="nav-card-label">Full schedule</div>
+      <div class="nav-card-title">UFC</div>
+    </div>
+    <div class="nav-card-arrow">↗</div>
+  </a>
+  <a href="boxing.html" class="nav-card nav-card-boxing">
+    <div class="nav-card-content">
+      <div class="nav-card-label">Full schedule</div>
+      <div class="nav-card-title">Boxing</div>
+    </div>
+    <div class="nav-card-arrow">↗</div>
+  </a>
+</div>
+
 <footer>
-  © 2026 Fight Times • Powered by Cloudflare Pages
+  <div class="footer-logo">Fight<span>Times</span></div>
+  <div class="footer-copy">© 2026 Fight Times • Powered by Cloudflare Pages</div>
 </footer>
 
 <script>
-// ─── API FETCH (via Cloudflare Worker — no CORS issues) ──────────────────────
-async function fetchUFCEvents() {
-  return []; // data comes from fetchAllFights()
+// ─── UTILITIES ────────────────────────────────────────────────────────────────
+function showError(msg) {
+  const c = document.getElementById('errorContainer');
+  const d = document.createElement('div');
+  d.className = 'error-notice';
+  d.textContent = '⚠ ' + msg;
+  c.appendChild(d);
 }
 
-async function fetchBoxingEvents() {
-  return []; // data comes from fetchAllFights()
+function getCountdown(dateStr) {
+  const diff = new Date(dateStr) - new Date();
+  if (diff <= 0) return 'LIVE NOW';
+  const d = Math.floor(diff / 86400000);
+  const h = Math.floor((diff % 86400000) / 3600000);
+  const m = Math.floor((diff % 3600000) / 60000);
+  const s = Math.floor((diff % 60000) / 1000);
+  if (d > 0) return `${d}D ${h}H ${m}M`;
+  return `${h}H ${m}M ${s}S`;
 }
 
+function getStatusPill(dateStr) {
+  const diff = new Date(dateStr) - new Date();
+  if (diff <= 0 && diff > -86400000) return `<span class="status-pill pill-live">● LIVE</span>`;
+  if (diff < 86400000) return `<span class="status-pill pill-soon">TOMORROW</span>`;
+  return `<span class="status-pill pill-upcoming">UPCOMING</span>`;
+}
+
+function formatDate(dateStr) {
+  return new Date(dateStr).toLocaleDateString('en-GB', {
+    weekday: 'short', day: 'numeric', month: 'short', year: 'numeric'
+  });
+}
+
+function formatTime(dateStr) {
+  return new Date(dateStr).toLocaleTimeString('en-GB', {
+    hour: '2-digit', minute: '2-digit', timeZoneName: 'short'
+  });
+}
+
+// Parse "Fighter A vs. Fighter B" into two parts
+function parseFighters(title) {
+  const m = title.match(/^(.+?)\s+vs\.?\s+(.+)$/i);
+  if (m) return [m[1].trim(), m[2].trim()];
+  return [title, ''];
+}
+
+function getBroadcasterHTML(event) {
+  if (!event.broadcast || !event.broadcast.length) return '';
+  const b = event.broadcast[0];
+  const broadcasters = b.broadcasters || [];
+  if (!broadcasters.length) return '';
+  return `<span class="card-broadcaster">📺 ${broadcasters.join(', ')}</span>`;
+}
+
+// ─── FETCH ────────────────────────────────────────────────────────────────────
 async function fetchAllFights() {
-  try {
-    const res = await fetch("/api/fights");
+  const res = await fetch('/api/fights');
+  if (!res.ok) throw new Error(`API ${res.status}: ${res.statusText}`);
+  return await res.json();
+}
 
-    if (!res.ok) {
-      throw new Error(`Worker responded with status ${res.status}: ${res.statusText}`);
+// ─── NORMALIZE DATA ───────────────────────────────────────────────────────────
+function normalizeBoxing(data) {
+  const raw = Array.isArray(data.boxing) ? data.boxing
+    : Array.isArray(data.boxing?.data) ? data.boxing.data
+    : Array.isArray(data.boxing?.fights) ? data.boxing.fights
+    : [];
+
+  return raw.map(f => ({
+    type: 'Boxing',
+    title: f.title || 'TBA vs TBA',
+    date: f.date || f.fight_date || f.event_date || '',
+    location: f.location || '',
+    venue: f.venue || '',
+    posterUrl: f.poster_image_url || null,
+    broadcast: f.broadcast || [],
+    promotion: f.promotion || '',
+  })).filter(f => f.date);
+}
+
+function normalizeUFC(data) {
+  // The MMA API returns individual fights, not events.
+  // Group by tournament name + startTimestamp to deduplicate
+  const raw = Array.isArray(data.ufc) ? data.ufc : [];
+
+  const eventMap = {};
+  raw.forEach(fight => {
+    const key = fight.tournament?.name || 'UFC Event';
+    if (!eventMap[key]) {
+      // Use the tournament startTimestamp as the event date
+      const ts = fight.tournament?.startTimestamp;
+      eventMap[key] = {
+        type: 'UFC',
+        title: fight.tournament?.name || 'UFC Event',
+        date: ts ? new Date(ts * 1000).toISOString() : '',
+        location: fight.tournament?.location || fight.venue?.city?.name || '',
+        venue: fight.venue?.name || '',
+        posterUrl: null,
+        broadcast: [],
+        promotion: 'UFC',
+      };
     }
+  });
 
-    const data = await res.json();
+  return Object.values(eventMap).filter(e => e.date);
+}
 
-    // ── Normalize UFC events ──
-    const rawUFC = data.ufc?.data || data.ufc?.events || data.ufc || [];
-    const ufcEvents = (Array.isArray(rawUFC) ? rawUFC : []).map(e => ({
-      dateEvent:     e.date || e.event_date || e.start_date || "",
-      strEvent:      e.name || `${e.fighter1 ?? "TBA"} vs ${e.fighter2 ?? "TBA"}`,
-      type:          "UFC",
-      fighter1Thumb: e.fighter1_image || e.image || null,
-      fighter2Thumb: e.fighter2_image || e.image || null,
-    })).filter(e => e.dateEvent);
+// ─── HERO ─────────────────────────────────────────────────────────────────────
+let countdownInterval = null;
 
-    // ── Normalize Boxing fights ──
-// ── Normalize Boxing fights ──
-const rawBoxing = Array.isArray(data.boxing)
-  ? data.boxing
-  : Array.isArray(data.boxing?.data)
-    ? data.boxing.data
-    : Array.isArray(data.boxing?.fights)
-      ? data.boxing.fights
-      : [];
+function populateHero(event) {
+  const [f1, f2] = parseFighters(event.title);
+  document.getElementById('heroFighter1').textContent = f1 || '—';
+  document.getElementById('heroFighter2').textContent = f2 || f1;
+  document.getElementById('heroEvent').textContent = event.type + ' • ' + (event.promotion || event.type);
+  document.getElementById('heroSportLabel').textContent = event.type;
+  document.getElementById('heroSportLabel2').textContent = event.type;
+  document.getElementById('heroEventName').textContent = event.title;
+  document.getElementById('heroDate').textContent = formatDate(event.date);
+  document.getElementById('heroLocation').textContent = event.location || event.venue || '—';
 
-const boxingEvents = rawBoxing.map(f => ({
-  dateEvent: f.date || f.fight_date || f.event_date || f.start_date || "",
-  strEvent:
-    f.title ||
-    `${f.boxer1?.name || f.fighter1?.name || f.boxer1 || f.fighter1 || "TBA"} vs ${
-      f.boxer2?.name || f.fighter2?.name || f.boxer2 || f.fighter2 || "TBA"
-    }`,
-  type: "Boxing",
-  fighter1Thumb:
-    f.boxer1?.image ||
-    f.fighter1?.image ||
-    f.boxer1_image ||
-    f.fighter1_image ||
-    null,
-  fighter2Thumb:
-    f.boxer2?.image ||
-    f.fighter2?.image ||
-    f.boxer2_image ||
-    f.fighter2_image ||
-    null,
-})).filter(f => f.dateEvent);
+  const diff = new Date(event.date) - new Date();
+  if (diff <= 0 && diff > -86400000) {
+    document.getElementById('heroStatus').innerHTML = '<span class="status-pill pill-live">● LIVE NOW</span>';
+  } else {
+    document.getElementById('heroStatus').innerHTML = '<span class="status-pill pill-upcoming">UPCOMING</span>';
+  }
 
-    return { ufcEvents, boxingEvents };
+  // Countdown ticker
+  const el = document.getElementById('heroCountdown');
+  if (countdownInterval) clearInterval(countdownInterval);
+  const update = () => { el.textContent = getCountdown(event.date); };
+  update();
+  countdownInterval = setInterval(update, 1000);
 
-  } catch (err) {
-    console.error("fetchAllFights error:", err);
-    showApiError("API", err.message);
-    return { ufcEvents: [], boxingEvents: [] };
+  // Poster bg
+  if (event.posterUrl) {
+    document.getElementById('heroPosterImg').src = event.posterUrl;
+    document.getElementById('heroPosterWrap').style.display = '';
   }
 }
 
-// ─── HELPERS ─────────────────────────────────────────────────────────────────
-function showApiError(source, message) {
-  const container = document.getElementById("apiErrors");
-  if (!container) return;
-  const div = document.createElement("div");
-  div.className = "api-error";
-  div.innerHTML = `⚠️ <strong>${source} API:</strong> ${message}`;
-  container.appendChild(div);
+// ─── FIGHT CARDS ─────────────────────────────────────────────────────────────
+function buildCard(event, index) {
+  const [f1, f2] = parseFighters(event.title);
+  const card = document.createElement('div');
+  card.className = 'fight-card';
+  card.style.animationDelay = `${index * 0.08}s`;
+
+  const posterHTML = event.posterUrl
+    ? `<div class="card-poster"><img src="${event.posterUrl}" alt="${event.title}" loading="lazy" onerror="this.parentElement.innerHTML='<div class=\\'card-poster-fallback\\'><span class=\\'sport-icon\\'>🥊</span></div>'"></div>`
+    : `<div class="card-poster-fallback"><span class="sport-icon">${event.type === 'UFC' ? '🥋' : '🥊'}</span></div>`;
+
+  const broadcasterHTML = getBroadcasterHTML(event);
+
+  card.innerHTML = `
+    <div class="card-accent-line"></div>
+    ${posterHTML}
+    <div class="card-body">
+      <div class="card-sport-tag">${event.type}${event.promotion ? ' • ' + event.promotion : ''}</div>
+      <div class="card-title">${f1}${f2 ? '<br><span style="color:var(--muted);font-size:0.85em">vs</span> ' + f2 : ''}</div>
+      ${broadcasterHTML}
+      <div class="card-meta">
+        <div class="card-meta-row">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+          ${formatDate(event.date)} · ${formatTime(event.date)}
+        </div>
+        ${event.venue || event.location ? `<div class="card-meta-row">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
+          ${[event.venue, event.location].filter(Boolean).join(', ')}
+        </div>` : ''}
+        <div class="card-countdown" id="cd-${index}">—</div>
+        ${getStatusPill(event.date)}
+      </div>
+    </div>`;
+
+  // Per-card countdown
+  const cdEl = card.querySelector(`#cd-${index}`);
+  setInterval(() => { cdEl.textContent = getCountdown(event.date); }, 1000);
+  cdEl.textContent = getCountdown(event.date);
+
+  return card;
 }
 
-function isWithin7Days(dateStr) {
-  const today     = new Date();
-  const eventDate = new Date(dateStr);
-  const diff      = (eventDate - today) / (1000 * 60 * 60 * 24);
-  return diff >= -1 && diff <= 7;
-}
+// ─── MAIN ─────────────────────────────────────────────────────────────────────
+async function init() {
+  const grid = document.getElementById('fightGrid');
 
-function getStatus(dateStr) {
-  const now   = new Date();
-  const event = new Date(dateStr);
-  const diff  = event - now;
-  if (diff <= 0 && diff > -86400000) return "LIVE";
-  if (diff <= 86400000 && diff > 0)  return "TOMORROW";
-  return "UPCOMING";
-}
+  try {
+    const data = await fetchAllFights();
 
-function createCountdownString(dateStr) {
-  const target = new Date(dateStr);
-  const diff   = target - new Date();
-  if (diff <= 0) return "LIVE NOW";
-  const d = Math.floor(diff / (1000 * 60 * 60 * 24));
-  const h = Math.floor((diff / (1000 * 60 * 60)) % 24);
-  const m = Math.floor((diff / (1000 * 60)) % 60);
-  const s = Math.floor((diff / 1000) % 60);
-  return `${d}d ${h}h ${m}m ${s}s`;
-}
+    const boxingEvents = normalizeBoxing(data);
+    const ufcEvents    = normalizeUFC(data);
 
-function startCountdownProgress(dateStr) {
-  const el    = document.getElementById("countdown");
-  const fill  = document.getElementById("progressFill");
-  const start = new Date();
-  const target= new Date(dateStr);
+    // Merge and sort by date ascending, filter to upcoming only (within 45 days)
+    const now = new Date();
+    const cutoff = new Date(now.getTime() + 45 * 86400000);
 
-  function update() {
-    const now  = new Date();
-    const diff = target - now;
-    if (diff <= 0) {
-      el.textContent = "LIVE NOW";
-      el.classList.add("live");
-      fill.style.width = "100%";
+    const allEvents = [...boxingEvents, ...ufcEvents]
+      .filter(e => {
+        const d = new Date(e.date);
+        return d >= new Date(now.getTime() - 86400000) && d <= cutoff;
+      })
+      .sort((a, b) => new Date(a.date) - new Date(b.date));
+
+    if (!allEvents.length) {
+      grid.innerHTML = '<div class="loading-state">No upcoming events found in the next 45 days.</div>';
       return;
     }
-    const total    = target - start;
-    const progress = Math.min(100, ((total - diff) / total) * 100);
-    fill.style.width    = `${progress}%`;
-    el.textContent = createCountdownString(dateStr);
-  }
 
-  update();
-  setInterval(update, 1000);
+    // Hero = soonest event
+    populateHero(allEvents[0]);
+
+    // Build grid
+    grid.innerHTML = '';
+    allEvents.forEach((event, i) => grid.appendChild(buildCard(event, i)));
+
+  } catch (err) {
+    console.error(err);
+    showError(err.message);
+    grid.innerHTML = '<div class="loading-state" style="color:#ff6b6b">Failed to load events. Check the console for details.</div>';
+    // Still try to show hero placeholder
+    document.getElementById('heroFighter1').textContent = 'FIGHT';
+    document.getElementById('heroFighter2').textContent = 'TIMES';
+    document.getElementById('heroEvent').textContent = 'UFC & Boxing Schedules';
+    document.getElementById('heroEventName').textContent = '—';
+  }
 }
 
-// ─── MAIN LOADER ──────────────────────────────────────────────────────────────
-async function loadFeatured() {
-  const { ufcEvents, boxingEvents } = await fetchAllFights();
-
-  // Merge, filter to this week, sort ascending
-  const allEvents = [...ufcEvents, ...boxingEvents]
-    .filter(e => isWithin7Days(e.dateEvent))
-    .sort((a, b) => new Date(a.dateEvent) - new Date(b.dateEvent));
-
-  const titleEl = document.getElementById("eventTitle");
-
-  if (!allEvents.length) {
-    titleEl.textContent = "No events found in the next 7 days";
-    document.getElementById("nextFights").textContent = "Check back soon.";
-    return;
-  }
-
-  const main = allEvents[0];
-
-  // ── Featured card ──
-  titleEl.textContent = main.strEvent;
-  document.getElementById("eventDate").textContent = new Date(main.dateEvent).toDateString();
-
-  const badge   = document.getElementById("statusBadge");
-  const status  = getStatus(main.dateEvent);
-  badge.textContent = status;
-  badge.className   = `status-badge ${status === "LIVE" ? "badge-live" : "badge-upcoming"}`;
-
-  // Fighter images (fallback to placeholder if null)
-  const placeholder = "https://via.placeholder.com/150x150/1a1a2e/e63946?text=Fighter";
-  document.getElementById("fighter1").src = main.fighter1Thumb || placeholder;
-  document.getElementById("fighter2").src = main.fighter2Thumb || placeholder;
-
-  startCountdownProgress(main.dateEvent);
-
-  // ── Upcoming list grouped by date ──
-  const listEl  = document.getElementById("nextFights");
-  listEl.innerHTML = "";
-
-  const grouped = {};
-  allEvents.forEach(e => {
-    const key = new Date(e.dateEvent).toDateString();
-    if (!grouped[key]) grouped[key] = [];
-    grouped[key].push(e);
-  });
-
-  Object.entries(grouped).forEach(([date, fights]) => {
-    const group = document.createElement("div");
-    group.className = "date-group";
-
-    const h4 = document.createElement("h4");
-    h4.textContent = date;
-    group.appendChild(h4);
-
-    fights.forEach(f => {
-      const div = document.createElement("div");
-      div.className = "mini-fight";
-      const s = getStatus(f.dateEvent);
-      div.innerHTML = `
-        ${f.strEvent}
-        <span style="color:var(--text-muted)"> • ${f.type}</span>
-        <span class="${s === 'LIVE' ? 'live' : ''}" style="margin-left:6px;font-size:0.8rem;font-weight:600;">
-          ${s === 'LIVE' ? '● LIVE' : s}
-        </span>`;
-      group.appendChild(div);
-    });
-
-    listEl.appendChild(group);
-  });
-}
-
-// ─── SCROLL ANIMATIONS ────────────────────────────────────────────────────────
-const observer = new IntersectionObserver(entries => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) entry.target.classList.add("visible");
-  });
-}, { threshold: 0.2 });
-
-document.querySelectorAll("[data-animate]").forEach(el => observer.observe(el));
-
-// ─── BOOT ─────────────────────────────────────────────────────────────────────
-loadFeatured();
+init();
 </script>
-
 </body>
 </html>
