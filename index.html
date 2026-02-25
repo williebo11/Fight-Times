@@ -552,45 +552,17 @@ function normalizeBoxing(raw) {
 
 function normalizeUFC(raw) {
   const arr = Array.isArray(raw) ? raw : [];
-
-  // Group individual fights by tournament name
-  const eventMap = {};
-
-  arr.forEach(fight => {
-    const tName = fight.tournament?.name || 'UFC Event';
-    if (!eventMap[tName]) {
-      const ts = fight.tournament?.startTimestamp || fight.startTimestamp;
-      eventMap[tName] = {
-        type:      'UFC',
-        title:     tName,
-        date:      ts ? new Date(ts * 1000).toISOString() : '',
-        location:  fight.tournament?.location || fight.venue?.city?.name || '',
-        venue:     fight.venue?.name || '',
-        posterUrl: null,
-        promotion: 'UFC',
-        _fights:   [],
-      };
-    }
-    eventMap[tName]._fights.push(fight);
-  });
-
-  // Build displayTitle from the highest-order (main event) fight
-  Object.values(eventMap).forEach(ev => {
-    if (ev._fights.length) {
-      const main = ev._fights.reduce((a,b) =>
-        ((a.order || 0) > (b.order || 0) ? a : b)
-      );
-      const f1 = main.homeTeam?.name || 'TBA';
-      const f2 = main.awayTeam?.name || 'TBA';
-      ev.displayTitle = `${f1} vs ${f2}`;
-    } else {
-      ev.displayTitle = ev.title;
-    }
-  });
-
-  return Object.values(eventMap).filter(e => e.date);
+  return arr.map(event => ({
+    type: 'UFC',
+    title: event.title || event.event || 'UFC Event',
+    displayTitle: event.displayTitle || event.main_event || event.title || 'TBA vs TBA',
+    date: event.date || event.time_utc || '',  // prefer ISO string
+    location: event.location || event.venue || '',
+    venue: event.venue || '',
+    promotion: event.promotion || 'UFC',
+    posterUrl: event.posterUrl || null,
+  })).filter(e => e.date);
 }
-
 // ── HERO ──────────────────────────────────────────────────────────────────────
 
 const _intervals = [];
