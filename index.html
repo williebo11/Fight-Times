@@ -483,13 +483,12 @@ async function loadFeatured() {
 
   // Merge, filter to this week, sort ascending
   const allEvents = [...ufcEvents, ...boxingEvents]
-    .filter(e => isWithin7Days(e.dateEvent))
     .sort((a, b) => new Date(a.dateEvent) - new Date(b.dateEvent));
 
   const titleEl = document.getElementById("eventTitle");
 
   if (!allEvents.length) {
-    titleEl.textContent = "No events found in the next 7 days";
+    titleEl.textContent = "No upcoming events found";
     document.getElementById("nextFights").textContent = "Check back soon.";
     return;
   }
