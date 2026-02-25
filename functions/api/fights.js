@@ -1,7 +1,8 @@
 export async function onRequestGet(context) {
-  const RAPID_KEY      = context.env.RAPIDAPI_KEY;
-  const SPORTRADAR_KEY = context.env.SPORTRADAR_KEY;
+  const RAPID_KEY    = context.env.RAPIDAPI_KEY;
+  const APISPORTS_KEY = context.env.APISPORTS_KEY;
 
+  const MMA_API    = "https://v1.mma.api-sports.io/events?next=10";
   const BOXING_API = "https://boxing-data-api.p.rapidapi.com/v1/events/schedule?days=7";
 
   async function safeFetch(url, options = {}, timeoutMs = 8000) {
@@ -17,10 +18,12 @@ export async function onRequestGet(context) {
     }
   }
 
-  // Try both trial and production URLs simultaneously
-  const [trialRes, prodRes, boxingRes] = await Promise.all([
-    safeFetch(`https://api.sportradar.com/mma/trial/v2/en/schedules/upcoming/schedule.json?api_key=${SPORTRADAR_KEY}`),
-    safeFetch(`https://api.sportradar.com/mma/production/v2/en/schedules/upcoming/schedule.json?api_key=${SPORTRADAR_KEY}`),
+  const [mmaRes, boxingRes] = await Promise.all([
+    safeFetch(MMA_API, {
+      headers: {
+        "x-apisports-key": APISPORTS_KEY,
+      },
+    }),
     safeFetch(BOXING_API, {
       headers: {
         "X-RapidAPI-Key":  RAPID_KEY,
@@ -29,15 +32,14 @@ export async function onRequestGet(context) {
     }),
   ]);
 
-  // Read both MMA responses as raw text so we see exactly what comes back
-  const trialText = trialRes  ? await trialRes.text()  : "no response";
-  const prodText  = prodRes   ? await prodRes.text()   : "no response";
+  // Read MMA raw so we see exact shape
+  let mmaRaw = null;
+  if (mmaRes) {
+    const text = await mmaRes.text();
+    try { mmaRaw = JSON.parse(text); } catch(e) { mmaRaw = text; }
+  }
 
-  let trialJson = null, prodJson = null;
-  try { trialJson = JSON.parse(trialText); } catch(e) { trialJson = trialText; }
-  try { prodJson  = JSON.parse(prodText);  } catch(e) { prodJson  = prodText; }
-
-  // Boxing (working — keep as normal)
+  // Boxing (working)
   let boxingData = [];
   if (boxingRes && boxingRes.ok) {
     try { boxingData = await boxingRes.json(); } catch(e) {}
@@ -45,10 +47,7 @@ export async function onRequestGet(context) {
 
   return new Response(
     JSON.stringify({
-      _debug: {
-        trial: { status: trialRes?.status, data: trialJson },
-        prod:  { status: prodRes?.status,  data: prodJson  },
-      },
+      _mmaDebug: { status: mmaRes?.status, data: mmaRaw },
       boxing: boxingData,
     }, null, 2),
     { headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" } }
