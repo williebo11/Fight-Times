@@ -5,6 +5,7 @@ export async function onRequest(context) {
   let ufcData    = { error: null, data: [] };
   let boxingData = { error: null, data: [] };
 
+  // ── UFC (BallDontLie) ──
   try {
     const ufcRes = await fetch("https://api.balldontlie.io/mma/v1/events?status=upcoming&per_page=25", {
       headers: { "Authorization": UFC_KEY }
@@ -15,12 +16,13 @@ export async function onRequest(context) {
     ufcData = { error: err.message, data: [] };
   }
 
+  // ── Boxing (correct schedule endpoint) ──
   try {
-    const boxRes = await fetch("https://boxing-data-api.p.rapidapi.com/v1/events/?status=upcoming", {
+    const boxRes = await fetch("https://boxing-data-api.p.rapidapi.com/v1/events/schedule?days=30&past_hours=12&date_sort=ASC&page_num=1&page_size=25", {
       method: "GET",
       headers: {
-        "X-RapidAPI-Key":  BOXING_KEY,
-        "X-RapidAPI-Host": "boxing-data-api.p.rapidapi.com"
+        "x-rapidapi-key":  BOXING_KEY,
+        "x-rapidapi-host": "boxing-data-api.p.rapidapi.com"
       }
     });
     const text = await boxRes.text();
