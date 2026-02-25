@@ -1,3 +1,5 @@
+Can you do the same for my ufc.html too?
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -266,7 +268,7 @@ async function fetchUFC(){
 }
 
 // ─────────────────────────
-// RENDER UFC CARDS
+// RENDER
 // ─────────────────────────
 
 async function init(){
@@ -290,10 +292,8 @@ async function init(){
       .sort((a,b)=>new Date(a.date)-new Date(b.date))
       .forEach(f => {
 
-        // Create clickable <a> card
-        const card = document.createElement('a');
+        const card = document.createElement('div');
         card.className = 'ufc-card';
-        card.href = `event.html?id=${encodeURIComponent(f.id || '')}`;
 
         card.innerHTML = `
         <div class="ufc-date">${formatDate(f.date)}</div>
@@ -310,7 +310,9 @@ async function init(){
         <div class="ufc-meta">
           <div>
             <div class="ufc-time">${formatTime(f.date)}</div>
-            <div class="ufc-timezone">${getTimezone()}</div>
+            <div class="ufc-timezone">
+              ${getTimezone()}
+            </div>
           </div>
           <div class="ufc-countdown"></div>
         </div>
