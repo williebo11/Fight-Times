@@ -456,7 +456,9 @@ footer {
 </footer>
 
 <script>
-// ── HELPERS ───────────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────
+// HELPERS
+// ─────────────────────────────────────────────────────────────
 
 function showError(msg) {
   const c = document.getElementById('errorContainer');
@@ -467,21 +469,21 @@ function showError(msg) {
 }
 
 function dayKey(dateStr) {
-  if (!dateStr) return '';
   const d = new Date(dateStr);
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
 
-function todayKey() { return dayKey(new Date().toISOString()); }
+function todayKey() { return dayKey(new Date()); }
 
 function tomorrowKey() {
-  const t = new Date(); t.setDate(t.getDate()+1);
-  return dayKey(t.toISOString());
+  const t = new Date();
+  t.setDate(t.getDate() + 1);
+  return dayKey(t);
 }
 
 function formatDayHeader(dateStr) {
   const dk = dayKey(dateStr);
-  if (dk === todayKey())   return 'TODAY';
+  if (dk === todayKey()) return 'TODAY';
   if (dk === tomorrowKey()) return 'TOMORROW';
   return new Date(dateStr).toLocaleDateString('en-GB', {
     weekday:'long', day:'numeric', month:'long'
@@ -489,53 +491,42 @@ function formatDayHeader(dateStr) {
 }
 
 function formatTime(dateStr) {
-  if (!dateStr) return 'TBA';
-  return new Date(dateStr).toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit' });
+  return new Date(dateStr).toLocaleTimeString('en-GB', {
+    hour:'2-digit',
+    minute:'2-digit'
+  });
 }
 
 function formatTimeZone(dateStr) {
-  if (!dateStr) return '';
-  const str = new Date(dateStr).toLocaleTimeString('en-GB', { timeZoneName:'short' });
-  const parts = str.split(' ');
-  return parts[parts.length - 1] || 'GMT';
+  const str = new Date(dateStr).toLocaleTimeString('en-GB', {
+    timeZoneName:'short'
+  });
+  return str.split(' ').pop();
 }
 
 function getCountdown(dateStr) {
-  if (!dateStr) return { str: 'TBA', state: 'upcoming' };
   const diff = new Date(dateStr) - Date.now();
   if (diff <= 0) return { str:'● LIVE NOW', state:'live' };
+
   const d = Math.floor(diff / 86400000);
   const h = Math.floor((diff % 86400000) / 3600000);
   const m = Math.floor((diff % 3600000) / 60000);
   const s = Math.floor((diff % 60000) / 1000);
+
   const str = d > 0 ? `${d}D ${h}H ${m}M` : `${h}H ${m}M ${s}S`;
   return { str, state: diff < 3600000 ? 'soon' : 'upcoming' };
 }
 
 function parseFighters(title) {
-  if (!title || title.trim() === '' || title.toUpperCase().includes('TBA') || title.toUpperCase().includes('TBD')) {
-    return null; // Skip rendering if TBA/TBD or empty
-  }
+  if (!title) return null;
   const clean = title.replace(/^[^:]+:\s*/, '').trim();
   const m = clean.match(/^(.+?)\s+vs\.?\s+(.+)$/i);
-  if (m) {
-    const f1 = m[1].trim();
-    const f2 = m[2].trim();
-    if (f1.toUpperCase().includes('TBA') || f2.toUpperCase().includes('TBA')) return null;
-    return [f1, f2];
-  }
-  return [clean, null];
+  return m ? [m[1].trim(), m[2].trim()] : [clean, null];
 }
 
-function getPillHTML(dateStr) {
-  if (!dateStr) return '';
-  const diff = new Date(dateStr) - Date.now();
-  if (diff <= 0 && diff > -10800000) return '<span class="status-pill pill-live">● LIVE</span>';
-  if (diff > 0 && diff < 3600000)    return '<span class="status-pill pill-soon">SOON</span>';
-  return '';
-}
-
-// ── FETCH ─────────────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────
+// FETCH
+// ─────────────────────────────────────────────────────────────
 
 async function fetchAllFights() {
   const res = await fetch('/api/fights');
@@ -543,263 +534,200 @@ async function fetchAllFights() {
   return res.json();
 }
 
-// ── NORMALIZE ─────────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────
+// NORMALIZE
+// ─────────────────────────────────────────────────────────────
 
 function normalizeBoxing(raw) {
-  const arr = Array.isArray(raw) ? raw
-    : Array.isArray(raw?.data) ? raw.data
-    : Array.isArray(raw?.fights) ? raw.fights : [];
-
-  return arr.map(f => ({
-    type:      'Boxing',
-    title:     f.event || f.title || '',
-    displayTitle: f.main_event || f.title || '',
-    date:      f.date || f.time_utc || f.event_date || '',
-    location:  f.location || '',
-    venue:     f.venue || '',
-    posterUrl: f.poster_image_url || null,
-    promotion: f.promotion || 'Boxing',
-  })).filter(f => f.date && f.displayTitle && !f.displayTitle.toUpperCase().includes('TBA'));
+  return (raw || []).map(f => ({
+    type: 'Boxing',
+    title: f.event || '',
+    displayTitle: f.main_event || '',
+    date: f.date || f.time_utc,
+    location: f.location || '',
+    venue: f.venue || '',
+    promotion: f.promotion || 'Boxing'
+  })).filter(f => f.date && f.displayTitle);
 }
 
 function normalizeUFC(raw) {
-  const arr = Array.isArray(raw) ? raw : [];
-  return arr.map(event => ({
+  return (raw || []).map(f => ({
     type: 'UFC',
-    title: event.event || event.title || 'UFC Event',
-    displayTitle: event.main_event || event.displayTitle || event.title || '',
-    date: event.date || event.time_utc || '',
-    location: event.location || event.venue || '',
-    venue: event.venue || '',
-    promotion: event.promotion || 'UFC',
-    posterUrl: event.posterUrl || null,
-  })).filter(e => e.date && e.displayTitle && !e.displayTitle.toUpperCase().includes('TBA'));
+    title: f.event || '',
+    displayTitle: f.main_event || '',
+    date: f.date || f.time_utc,
+    location: f.location || '',
+    venue: f.venue || '',
+    promotion: f.promotion || 'UFC'
+  })).filter(f => f.date && f.displayTitle);
 }
 
-// ── HERO ──────────────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────
+// HERO
+// ─────────────────────────────────────────────────────────────
 
-const _intervals = [];
-
-function buildHeroCard(event, countClass) {
-  const [f1, f2] = parseFighters(event.displayTitle || event.title);
-  if (!f1) return null; // Skip TBA/invalid
-
-  const card = document.createElement('div');
-  card.className = 'hero-card';
-
-  const time = formatTime(event.date);
-  const tz   = formatTimeZone(event.date);
-  const loc  = [event.venue, event.location].filter(Boolean).join(', ') || '—';
-  const sportClass = event.type === 'UFC' ? 'sport-ufc' : 'sport-boxing';
-  const idx = Math.random().toString(36).slice(2);
-
-  card.innerHTML = `
-    <div class="hero-card-bg-time">${time}</div>
-    <div class="hero-sport-tag">
-      <span class="fight-sport ${sportClass}">${event.type}</span>
-      ${event.promotion && event.promotion !== event.type ? '&nbsp;' + event.promotion : ''}
-    </div>
-    <div class="hero-matchup">
-      <span class="hero-fighter">${f1}</span>
-      ${f2 ? `<span class="hero-vs">VS</span><span class="hero-fighter">${f2}</span>` : ''}
-    </div>
-    <div class="hero-meta">
-      <div class="hero-meta-item">
-        <span class="hero-meta-label">Location</span>
-        <span class="hero-meta-value">${loc}</span>
-      </div>
-      <div class="hero-meta-item">
-        <span class="hero-meta-label">Time</span>
-        <span class="hero-meta-value">${time} <span style="color:var(--muted);font-size:.85em">${tz}</span></span>
-      </div>
-      <div class="hero-meta-item">
-        <span class="hero-meta-label">Countdown</span>
-        <span class="hero-meta-value countdown-val" id="hcd-${idx}">—</span>
-      </div>
-    </div>`;
-
-  function tick() {
-    const el = document.getElementById(`hcd-${idx}`);
-    if (!el) return;
-    const { str, state } = getCountdown(event.date);
-    el.textContent = str;
-    el.className = `hero-meta-value countdown-val${state === 'live' ? ' live-val' : ''}`;
-  }
-  tick();
-  _intervals.push(setInterval(tick, 1000));
-
-  return card;
-}
+let intervals = [];
 
 function renderHero(events) {
-  _intervals.forEach(clearInterval);
-  _intervals.length = 0;
+  intervals.forEach(clearInterval);
+  intervals = [];
 
   const container = document.getElementById('heroCards');
   container.innerHTML = '';
 
-  const validEvents = events.filter(ev => {
-    const [f1] = parseFighters(ev.displayTitle || ev.title);
-    return f1 && f1 !== 'TBA';
-  });
+  const count = Math.min(events.length, 4);
+  container.className = `hero-cards count-${count}`;
 
-  if (!validEvents.length) {
-    container.innerHTML = '<div class="state-box">No confirmed fights found for the next fight night.</div>';
-    return;
-  }
+  events.forEach(event => {
+    const [f1, f2] = parseFighters(event.displayTitle);
+    if (!f1) return;
 
-  const n = Math.min(validEvents.length, 4);
-  container.className = `hero-cards count-${n}`;
+    const card = document.createElement('div');
+    card.className = 'hero-card';
 
-  const dk = dayKey(validEvents[0].date);
-  document.getElementById('heroLabel').textContent =
-    dk === todayKey()   ? "Tonight's Fights" :
-    dk === tomorrowKey() ? "Tomorrow's Fights" :
-    "Next Fight Night";
+    const id = Math.random().toString(36).slice(2);
+    const time = formatTime(event.date);
+    const tz = formatTimeZone(event.date);
+    const loc = [event.venue, event.location].filter(Boolean).join(', ');
 
-  validEvents.forEach(ev => {
-    const card = buildHeroCard(ev, n);
-    if (card) container.appendChild(card);
-  });
-}
-
-// ── SCHEDULE ──────────────────────────────────────────────────────────────────
-
-let rowIdx = 0;
-
-function buildFightRow(event) {
-  const [f1, f2] = parseFighters(event.displayTitle || event.title);
-  if (!f1) return null; // Skip TBA/invalid
-
-  const row = document.createElement('div');
-  row.className = 'fight-row';
-
-  const sportClass = event.type === 'UFC' ? 'sport-ufc' : 'sport-boxing';
-  const loc  = [event.venue, event.location].filter(Boolean);
-  const time = formatTime(event.date);
-  const tz   = formatTimeZone(event.date);
-  const idx  = rowIdx++;
-
-  row.innerHTML = `
-    <div><span class="fight-sport ${sportClass}">${event.type}</span></div>
-    <div class="fight-matchup">
-      <div class="fight-fighters">
-        ${f1}${f2 ? `<span class="vs-inline">vs</span>${f2}` : ''}
+    card.innerHTML = `
+      <div class="hero-card-bg-time">${time}</div>
+      <div class="hero-matchup">
+        <span class="hero-fighter">${f1}</span>
+        ${f2 ? `<span class="hero-vs">VS</span><span class="hero-fighter">${f2}</span>` : ''}
       </div>
-      <div class="fight-event-name">${event.title}</div>
-      ${getPillHTML(event.date)}
-    </div>
-    <div class="fight-location">
-      ${loc.length ? `<strong>${loc[0]}</strong>${loc[1] ? loc[1] : ''}` : '—'}
-    </div>
-    <div class="fight-time">
-      <span class="time-main">${time}</span>
-      <span class="time-zone">${tz}</span>
-    </div>
-    <div class="fight-countdown" id="rcd-${idx}">—</div>`;
+      <div class="hero-meta">
+        <div class="hero-meta-item">
+          <span class="hero-meta-label">Location</span>
+          <span class="hero-meta-value">${loc}</span>
+        </div>
+        <div class="hero-meta-item">
+          <span class="hero-meta-label">Time</span>
+          <span class="hero-meta-value">${time} ${tz}</span>
+        </div>
+        <div class="hero-meta-item">
+          <span class="hero-meta-label">Countdown</span>
+          <span class="hero-meta-value countdown-val" id="cd-${id}">—</span>
+        </div>
+      </div>
+    `;
 
-  function tick() {
-    const el = document.getElementById(`rcd-${idx}`);
-    if (!el) return;
-    const { str, state } = getCountdown(event.date);
-    el.textContent = str;
-    el.className = `fight-countdown${state === 'live' ? ' is-live' : state === 'soon' ? ' is-soon' : ''}`;
-  }
-  tick();
-  _intervals.push(setInterval(tick, 1000));
+    function tick() {
+      const el = document.getElementById(`cd-${id}`);
+      if (!el) return;
+      const { str } = getCountdown(event.date);
+      el.textContent = str;
+    }
 
-  return row;
+    tick();
+    intervals.push(setInterval(tick, 1000));
+
+    container.appendChild(card);
+  });
 }
+
+// ─────────────────────────────────────────────────────────────
+// SCHEDULE
+// ─────────────────────────────────────────────────────────────
 
 function renderSchedule(events) {
   const list = document.getElementById('scheduleList');
   list.innerHTML = '';
-  rowIdx = 0;
 
-  const validEvents = events.filter(ev => {
-    const [f1] = parseFighters(ev.displayTitle || ev.title);
-    return f1 && f1 !== 'TBA';
-  });
-
-  if (!validEvents.length) {
-    list.innerHTML = '<div class="state-box">No confirmed events in the next 7 days. Check back soon.</div>';
+  if (!events.length) {
+    list.innerHTML = `<div class="state-box">No events found.</div>`;
     return;
   }
 
-  // Group by day
-  const groups = {};
-  validEvents.forEach(e => {
-    const k = dayKey(e.date);
-    if (!groups[k]) groups[k] = [];
-    groups[k].push(e);
-  });
+  events.forEach(event => {
+    const row = document.createElement('div');
+    row.className = 'fight-row';
 
-  Object.entries(groups).forEach(([dk, fights], gi) => {
-    const group = document.createElement('div');
-    group.className = 'day-group';
-    group.style.animationDelay = `${gi * 0.07}s`;
+    const [f1, f2] = parseFighters(event.displayTitle);
+    const time = formatTime(event.date);
+    const tz = formatTimeZone(event.date);
 
-    const isToday = dk === todayKey();
-    group.innerHTML = `
-      <div class="day-header">
-        <div class="day-date ${isToday ? 'today' : ''}">${formatDayHeader(fights[0].date)}</div>
-        <div class="day-line"></div>
-        <div class="day-count">${fights.length} event${fights.length > 1 ? 's' : ''}</div>
-      </div>`;
+    row.innerHTML = `
+      <div><strong>${event.type}</strong></div>
+      <div class="fight-matchup">
+        <div class="fight-fighters">${f1} ${f2 ? 'vs ' + f2 : ''}</div>
+        <div class="fight-event-name">${event.title}</div>
+      </div>
+      <div class="fight-location">${event.venue}</div>
+      <div class="fight-time">
+        <span class="time-main">${time}</span>
+        <span class="time-zone">${tz}</span>
+      </div>
+      <div class="fight-countdown">${getCountdown(event.date).str}</div>
+    `;
 
-    fights.forEach(fight => {
-      const row = buildFightRow(fight);
-      if (row) group.appendChild(row);
-    });
-
-    if (group.querySelectorAll('.fight-row').length > 0) {
-      list.appendChild(group);
-    }
+    list.appendChild(row);
   });
 }
 
-// ── MAIN ──────────────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────
+// FILTER SYSTEM (7 / 30 DAYS)
+// ─────────────────────────────────────────────────────────────
+
+let allEvents = [];
+let selectedRange = 7;
+
+function filterAndRender() {
+  const now = Date.now();
+  const limit = now + selectedRange * 86400000;
+
+  const upcoming = allEvents
+    .filter(e => {
+      const t = new Date(e.date).getTime();
+      return t >= now && t <= limit;
+    })
+    .sort((a,b) => new Date(a.date) - new Date(b.date));
+
+  if (!upcoming.length) {
+    document.getElementById('heroCards').innerHTML =
+      `<div class="state-box">No events in next ${selectedRange} days.</div>`;
+    document.getElementById('scheduleList').innerHTML = '';
+    return;
+  }
+
+  const firstDay = dayKey(upcoming[0].date);
+  renderHero(upcoming.filter(e => dayKey(e.date) === firstDay));
+  renderSchedule(upcoming);
+
+  document.getElementById('rangeLabel').textContent =
+    `Next ${selectedRange} days`;
+}
+
+function setupToggle() {
+  const buttons = document.querySelectorAll('.range-btn');
+
+  buttons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      buttons.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      selectedRange = parseInt(btn.dataset.range);
+      filterAndRender();
+    });
+  });
+}
+
+// ─────────────────────────────────────────────────────────────
+// INIT
+// ─────────────────────────────────────────────────────────────
 
 async function init() {
   try {
     const data = await fetchAllFights();
-
     const boxing = normalizeBoxing(data.boxing);
-    const ufc    = normalizeUFC(data.ufc);
-    const all    = [...boxing, ...ufc];
+    const ufc = normalizeUFC(data.ufc);
 
-    const now     = Date.now();
-    const in7days = now + 7 * 86400000; // Change to 30 * 86400000 for longer view during testing
-
-    const upcoming = all
-      .filter(e => {
-        if (!e.date) return false;
-        const t = new Date(e.date).getTime();
-        return !isNaN(t) && t >= (now - 10800000) && t <= in7days;
-      })
-      .sort((a, b) => new Date(a.date) - new Date(b.date));
-
-    if (!upcoming.length) {
-      document.getElementById('heroCards').innerHTML =
-        '<div class="state-box">No confirmed events in the next 7 days.</div>';
-      document.getElementById('scheduleList').innerHTML =
-        '<div class="state-box">Check back soon for updates.</div>';
-      return;
-    }
-
-    // Hero = all events on the soonest day
-    const soonestDay = dayKey(upcoming[0].date);
-    renderHero(upcoming.filter(e => dayKey(e.date) === soonestDay));
-
-    // Full vertical schedule
-    renderSchedule(upcoming);
+    allEvents = [...boxing, ...ufc];
+    filterAndRender();
+    setupToggle();
 
   } catch (err) {
     console.error(err);
     showError(err.message);
-    document.getElementById('heroCards').innerHTML =
-      '<div class="state-box" style="color:#ff6b6b">Failed to load events. Try refreshing.</div>';
-    document.getElementById('scheduleList').innerHTML = '';
   }
 }
 
