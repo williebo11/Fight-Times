@@ -18,7 +18,7 @@ export async function onRequest(context) {
 
   // ── Boxing (correct schedule endpoint) ──
   try {
-    const boxRes = await fetch("https://boxing-data-api.p.rapidapi.com/v1/events/schedule?days=7&past_hours=12&date_sort=ASC&page_num=1&page_size=25", {
+    const boxRes = await fetch("https://boxing-data-api.p.rapidapi.com/v1/events/schedule?days=1&past_hours=12&date_sort=ASC&page_num=1&page_size=25", {
       method: "GET",
       headers: {
         "x-rapidapi-key":  BOXING_KEY,
