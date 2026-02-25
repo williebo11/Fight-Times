@@ -645,6 +645,22 @@ function normalizeUFC(raw) {
   })).filter(f => f.date && f.displayTitle);
 }
 
+
+
+
+function formatScheduleDate(dateStr) {
+  return new Date(dateStr).toLocaleDateString('en-GB', {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short'
+  }).toUpperCase();
+}
+
+
+
+
+
+
 // ─────────────────────────────────────────────────────────────
 // HERO
 // ─────────────────────────────────────────────────────────────
@@ -729,17 +745,18 @@ function renderSchedule(events) {
     const [f1, f2] = parseFighters(event.displayTitle);
     const time = formatTime(event.date);
     const tz = formatTimeZone(event.date);
-
+    const fightDate = formatScheduleDate(event.date);
     row.innerHTML = `
       <div>
         <span class="fight-sport ${event.type === 'UFC' ? 'sport-ufc' : 'sport-boxing'}">
           ${event.type}
         </span>
       </div>
-      <div class="fight-matchup">
-        <div class="fight-fighters">${f1} ${f2 ? 'vs ' + f2 : ''}</div>
-        <div class="fight-event-name">${event.title}</div>
-      </div>
+        <div class="fight-matchup">
+          <div class="fight-date">${fightDate}</div>
+          <div class="fight-fighters">${f1} ${f2 ? 'vs ' + f2 : ''}</div>
+          <div class="fight-event-name">${event.title}</div>
+        </div>
       <div class="fight-location">${event.venue}</div>
       <div class="fight-time">
         <span class="time-main">${time}</span>
