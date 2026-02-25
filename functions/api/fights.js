@@ -1,53 +1,76 @@
 export async function onRequestGet(context) {
-  const RAPID_KEY = context.env.RAPIDAPI_KEY;
+  const RAPID_KEY   = context.env.RAPIDAPI_KEY;
+  const SPORTRADAR_KEY = context.env.SPORTRADAR_KEY; // add this in Cloudflare env vars
 
-  const TAPOLOGY_BASE = "https://unofficial-tapology-api.p.rapidapi.com/api/schedule/events";
-  const MMA_FIELDS = "fields=organization%2Cmain_event%2Cweight_class%2Cdatetime%2Ccity%2Csubregion%2Cbroadcast%2Ctitle_bout_desc%2Cfight_card";
-
+  const MMA_API   = `https://api.sportradar.com/mma/trial/v2/en/schedules/upcoming/schedule.json?api_key=${SPORTRADAR_KEY}`;
   const BOXING_API = "https://boxing-data-api.p.rapidapi.com/v1/events/schedule?days=7";
 
-  async function safeFetch(url, host, timeoutMs = 8000) {
+  async function safeFetch(url, options = {}, timeoutMs = 8000) {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), timeoutMs);
     try {
-      const res = await fetch(url, {
-        headers: { "X-RapidAPI-Key": RAPID_KEY, "X-RapidAPI-Host": host },
-        signal: controller.signal,
-      });
+      const res = await fetch(url, { ...options, signal: controller.signal });
       clearTimeout(timer);
       return res;
     } catch (err) {
       clearTimeout(timer);
-      console.warn(`safeFetch failed:`, err.message);
+      console.warn(`safeFetch failed for ${url}:`, err.message);
       return null;
     }
   }
 
-  // Fire all in parallel
-  const [ufcRes, boxingRes] = await Promise.all([
-    safeFetch(`${TAPOLOGY_BASE}/16?${MMA_FIELDS}`, "unofficial-tapology-api.p.rapidapi.com"),
-    safeFetch(BOXING_API, "boxing-data-api.p.rapidapi.com"),
+  const [mmaRes, boxingRes] = await Promise.all([
+    safeFetch(MMA_API), // SportRadar uses key in URL, no extra headers needed
+    safeFetch(BOXING_API, {
+      headers: {
+        "X-RapidAPI-Key":  RAPID_KEY,
+        "X-RapidAPI-Host": "boxing-data-api.p.rapidapi.com",
+      },
+    }),
   ]);
 
-  // ── DEBUG: return the raw Tapology response so we can see its shape ──
-  let ufcRaw = null;
-  let ufcError = null;
-  if (ufcRes) {
-    const text = await ufcRes.text(); // read as text first
-    ufcError = ufcRes.ok ? null : `HTTP ${ufcRes.status}`;
-    try { ufcRaw = JSON.parse(text); } catch(e) { ufcRaw = text; }
+  // MMA
+  let mmaEvents = [];
+  if (mmaRes && mmaRes.ok) {
+    try {
+      const json = await mmaRes.json();
+      // SportRadar returns { sport_events: [...] }
+      mmaEvents = json?.sport_events || json?.schedules || json?.results || [];
+    } catch (e) {
+      console.warn("MMA parse failed:", e.message);
+    }
   } else {
-    ufcError = "Timed out";
+    console.warn("MMA unavailable:", mmaRes?.status);
   }
 
-  // Boxing (already working — keep as-is)
+  // Boxing
   let boxingData = [];
   if (boxingRes && boxingRes.ok) {
-    try { boxingData = await boxingRes.json(); } catch(e) {}
+    try {
+      boxingData = await boxingRes.json();
+    } catch (e) {
+      console.warn("Boxing parse failed:", e.message);
+    }
+  } else {
+    console.warn("Boxing unavailable:", boxingRes?.status);
   }
 
   return new Response(
-    JSON.stringify({ _ufcDebug: { status: ufcRes?.status, error: ufcError, raw: ufcRaw }, boxing: boxingData }, null, 2),
-    { headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" } }
+    JSON.stringify({ ufc: mmaEvents, boxing: boxingData }),
+    {
+      headers: {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*",
+      },
+    }
   );
 }
+```
+
+**Two things you need to do:**
+
+1. **Add the key to Cloudflare** — go to your Pages project → Settings → Environment Variables → add `SPORTRADAR_KEY` with value `dd182ebd-221a-4ccf-a649-02806c1ce388`
+
+2. **Check if it's trial or production** — if the trial URL returns a 401, swap `trial` for `production` in the URL. You can also just test it in your browser first:
+```
+https://api.sportradar.com/mma/trial/v2/en/schedules/upcoming/schedule.json?api_key=dd182ebd-221a-4ccf-a649-02806c1ce388
