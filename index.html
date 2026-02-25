@@ -356,68 +356,33 @@ footer {
 </footer>
 
 <script>
-// --- UFC & Boxing API keys ---
+// Config
 const UFC_API_KEY = "dd182ebd-221a-4ccf-a649-02806c1ce388";
 const BOXING_API_KEY = "ecb9ddf1b3msh9a639108aea55e9p19af3fjsn3f3aedde51b9";
+const DAYS_AHEAD = 14; // Show fights in the next 14 days
 
-// --- Fetch UFC upcoming fights from BallDontLie MMA API ---
-async function fetchUFCEvents() {
-  try {
-    const res = await fetch("https://ball-dont-lie-mma.p.rapidapi.com/v1/events/upcoming", {
-      method: "GET",
-      headers: {
-        "X-RapidAPI-Key": UFC_API_KEY,
-        "X-RapidAPI-Host": "ball-dont-lie-mma.p.rapidapi.com"
-      }
-    });
-    const data = await res.json();
-    return data.events || [];
-  } catch(err) {
-    console.error("Error fetching UFC events:", err);
-    return [];
-  }
-}
-
-// --- Fetch Boxing upcoming fights from Boxing-Data API ---
-async function fetchBoxingEvents() {
-  try {
-    const res = await fetch("https://boxing-data.p.rapidapi.com/upcoming", {
-      method: "GET",
-      headers: {
-        "X-RapidAPI-Key": BOXING_API_KEY,
-        "X-RapidAPI-Host": "boxing-data.p.rapidapi.com"
-      }
-    });
-    const data = await res.json();
-    return data.fights || [];
-  } catch(err) {
-    console.error("Error fetching Boxing events:", err);
-    return [];
-  }
-}
-
-// --- Utility functions ---
-function isWithin7Days(dateStr){
-  const today = new Date();
-  const eventDate = new Date(dateStr);
-  const diff = (eventDate - today)/(1000*60*60*24);
-  return diff >= -1 && diff <= 7;
+// Helpers
+function isWithinDays(dateStr, days) {
+  const now = new Date();
+  const d = new Date(dateStr);
+  const diff = (d - now) / (1000*60*60*24);
+  return diff >= -1 && diff <= days;
 }
 
 function getStatus(dateStr){
   const now = new Date();
-  const eventDate = new Date(dateStr);
-  const diff = eventDate - now;
-  if(diff <= 0 && diff > -86400000) return "LIVE";
+  const d = new Date(dateStr);
+  const diff = d - now;
+  if(diff <=0 && diff > -86400000) return "LIVE";
   if(diff <= 86400000) return "TOMORROW";
   return "UPCOMING";
 }
 
-function createCountdown(dateStr){
+function formatCountdown(dateStr){
   const target = new Date(dateStr);
   const now = new Date();
   const diff = target - now;
-  if(diff <= 0) return "LIVE NOW";
+  if(diff <=0) return "LIVE NOW";
   const d = Math.floor(diff/(1000*60*60*24));
   const h = Math.floor((diff/(1000*60*60))%24);
   const m = Math.floor((diff/(1000*60))%60);
@@ -425,53 +390,128 @@ function createCountdown(dateStr){
   return `${d}d ${h}h ${m}m ${s}s`;
 }
 
-// --- Load featured fight & upcoming fights ---
+// Countdown + progress bar
+function startCountdownProgress(dateStr){
+  const el = document.getElementById("countdown");
+  const fill = document.getElementById("progressFill");
+  const target = new Date(dateStr);
+  const start = new Date();
+
+  function update(){
+    const now = new Date();
+    const diff = target-now;
+    if(diff<=0){
+      el.innerText="LIVE NOW";
+      el.classList.add("live");
+      fill.style.width="100%";
+      return;
+    }
+    const total = target-start;
+    const progress = Math.min(100, ((total-diff)/total)*100);
+    fill.style.width=`${progress}%`;
+    el.innerText=formatCountdown(dateStr);
+  }
+  update();
+  setInterval(update,1000);
+}
+
+// Fetch UFC events
+async function fetchUFCEvents(){
+  try{
+    const res = await fetch("https://api.balldontlie.io/mma/v1/events?per_page=100", {
+      headers:{ "Authorization": UFC_API_KEY }
+    });
+    const data = await res.json();
+    return data.data || [];
+  } catch(err){
+    console.error("UFC fetch error:",err);
+    return [];
+  }
+}
+
+// Fetch UFC fights for an event
+async function fetchUFCFights(eventId){
+  try{
+    const res = await fetch(`https://api.balldontlie.io/mma/v1/fights?event_ids[]=${eventId}`, {
+      headers:{ "Authorization": UFC_API_KEY }
+    });
+    const data = await res.json();
+    return data.data || [];
+  } catch(err){
+    console.error("UFC fights error:",err);
+    return [];
+  }
+}
+
+// Fetch Boxing fights
+async function fetchBoxingFights(){
+  try{
+    const res = await fetch("https://boxing-data-api.p.rapidapi.com/v1/fights/schedule", {
+      headers:{
+        "X-RapidAPI-Key": BOXING_API_KEY,
+        "X-RapidAPI-Host": "boxing-data-api.p.rapidapi.com"
+      }
+    });
+    const data = await res.json();
+    return data || [];
+  } catch(err){
+    console.error("Boxing fetch error:",err);
+    return [];
+  }
+}
+
+// Load featured & upcoming
 async function loadFeatured(){
-  const [ufcEvents, boxingEvents] = await Promise.all([fetchUFCEvents(), fetchBoxingEvents()]);
+  const [ufcEvents, boxingFights] = await Promise.all([fetchUFCEvents(), fetchBoxingFights()]);
 
-  // Normalize UFC events
-  const ufc = ufcEvents.map(e => ({
-    dateEvent: e.date, 
-    strEvent: `${e.fighter1} vs ${e.fighter2}`, 
-    type: "UFC",
-    fighter1Thumb: e.fighter1_image || "UFC-bg.jpg",
-    fighter2Thumb: e.fighter2_image || "UFC-bg.jpg"
+  // Build UFC fights array
+  const ufcFights = [];
+  for(let ev of ufcEvents){
+    if(!ev.date) continue;
+    const fights = await fetchUFCFights(ev.id);
+    fights.forEach(f=>{
+      ufcFights.push({
+        dateEvent: ev.date,
+        strEvent:`${f.fighter1.name} vs ${f.fighter2.name}`,
+        type:"UFC"
+      });
+    });
+  }
+
+  // Boxing array
+  const boxingList = boxingFights.map(f=>({
+    dateEvent:f.date,
+    strEvent:`${f.fighters.fighter_1.full_name} vs ${f.fighters.fighter_2.full_name}`,
+    type:"Boxing"
   }));
 
-  // Normalize Boxing events
-  const boxing = boxingEvents.map(e => ({
-    dateEvent: e.date,
-    strEvent: `${e.boxer1} vs ${e.boxer2}`,
-    type: "Boxing",
-    fighter1Thumb: e.boxer1_image || "boxing-bg.jpg",
-    fighter2Thumb: e.boxer2_image || "boxing-bg.jpg"
-  }));
+  // Combine and filter
+  const allEvents = [...ufcFights, ...boxingList]
+    .filter(e=>isWithinDays(e.dateEvent,DAYS_AHEAD))
+    .sort((a,b)=>new Date(a.dateEvent)-new Date(b.dateEvent));
 
-  // Combine & filter next 7 days
-  const allEvents = [...ufc, ...boxing].filter(e => isWithin7Days(e.dateEvent))
-                                       .sort((a,b)=>new Date(a.dateEvent)-new Date(b.dateEvent));
-  if(!allEvents.length) {
-    document.getElementById("eventTitle").innerText = "No upcoming fights this week";
+  if(!allEvents.length){
+    document.getElementById("eventTitle").innerText="No upcoming fights this week";
+    document.getElementById("eventDate").innerText="";
+    document.getElementById("statusBadge").innerText="";
+    document.getElementById("countdown").innerText="";
+    document.getElementById("progressFill").style.width="0%";
     return;
   }
 
-  const mainEvent = allEvents[0];
-
-  // Featured card
-  document.getElementById("eventTitle").innerText = mainEvent.strEvent;
-  document.getElementById("eventDate").innerText = new Date(mainEvent.dateEvent).toDateString();
-  const status = getStatus(mainEvent.dateEvent);
+  const main = allEvents[0];
+  document.getElementById("eventTitle").innerText=main.strEvent;
+  document.getElementById("eventDate").innerText=new Date(main.dateEvent).toDateString();
+  const status = getStatus(main.dateEvent);
   const badge = document.getElementById("statusBadge");
-  badge.innerText = status==="LIVE"?"LIVE":status==="TOMORROW"?"TOMORROW":"UPCOMING";
-  badge.className = `status-badge ${status==="LIVE"?"badge-live":"badge-upcoming"}`;
-  document.getElementById("fighter1").src = mainEvent.fighter1Thumb;
-  document.getElementById("fighter2").src = mainEvent.fighter2Thumb;
+  badge.innerText=status;
+  badge.className=`status-badge ${status==="LIVE"?"badge-live":"badge-upcoming"}`;
 
-  startCountdownProgress(mainEvent.dateEvent);
+  startCountdownProgress(main.dateEvent);
 
-  // Upcoming fights grouped by day
+  // Upcoming fights grouped
   const listEl = document.getElementById("nextFights");
-  listEl.innerHTML = "";
+  listEl.innerHTML="";
   const grouped = {};
   allEvents.forEach(e=>{
     const d = new Date(e.dateEvent).toDateString();
@@ -483,53 +523,28 @@ async function loadFeatured(){
     const groupDiv = document.createElement("div");
     groupDiv.className="date-group";
     const h4 = document.createElement("h4");
-    h4.innerText = date;
+    h4.innerText=date;
     groupDiv.appendChild(h4);
     grouped[date].forEach(f=>{
       const div = document.createElement("div");
       div.className="mini-fight";
-      div.innerText = `${f.strEvent} • ${f.type} • ${getStatus(f.dateEvent)}`;
+      div.innerText=`${f.strEvent} • ${f.type} • ${getStatus(f.dateEvent)}`;
       groupDiv.appendChild(div);
     });
     listEl.appendChild(groupDiv);
   });
 }
 
-// --- Countdown progress bar ---
-function startCountdownProgress(dateStr){
-  const el = document.getElementById("countdown");
-  const fill = document.getElementById("progressFill");
-  const target = new Date(dateStr);
-  const start = new Date();
+// Initialize
+loadFeatured();
 
-  function update(){
-    const now = new Date();
-    const diff = target-now;
-    if(diff <= 0){
-      el.innerText="LIVE NOW";
-      el.classList.add("live");
-      fill.style.width="100%";
-      return;
-    }
-    const total = target-start;
-    const progress = Math.min(100, ((total-diff)/total)*100);
-    fill.style.width=`${progress}%`;
-    el.innerText=createCountdown(dateStr);
-  }
-  update();
-  setInterval(update,1000);
-}
-
-// --- Scroll animations ---
+// Scroll animations
 const observer = new IntersectionObserver(entries=>{
   entries.forEach(entry=>{
     if(entry.isIntersecting) entry.target.classList.add('visible');
   });
 },{threshold:0.2});
 document.querySelectorAll('[data-animate]').forEach(el=>observer.observe(el));
-
-// --- Initialize ---
-loadFeatured();
 </script>
 
 </body>
