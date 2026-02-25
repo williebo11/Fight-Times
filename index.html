@@ -1,62 +1,564 @@
-export async function onRequest(context) {
-  const UFC_KEY    = "dd182ebd-221a-4ccf-a649-02806c1ce388";
-  const BOXING_KEY = "ecb9ddf1b3msh9a639108aea55e9p19af3fjsn3f3aedde51b9";
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Fight Times – UFC & Boxing Schedules</title>
 
-  let ufcData    = { error: null, data: [] };
-  let boxingData = { error: null, data: [] };
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
 
-  // ── UFC: fetch both "scheduled" and "upcoming" to catch all near events ──
+<style>
+:root {
+  --bg: #0a0a0f;
+  --card: #111118;
+  --accent: #e63946;
+  --accent-dark: #b32d38;
+  --text: #e0e0ff;
+  --text-muted: #a0a0cc;
+  --border: rgba(230,57,70,0.2);
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height:100vh;
+  background-image:
+    radial-gradient(circle at 10% 20%, rgba(230,57,70,0.08), transparent 30%),
+    radial-gradient(circle at 90% 80%, rgba(230,57,70,0.06), transparent 40%);
+  scroll-behavior: smooth;
+}
+
+header {
+  padding: 4rem 2rem 2rem;
+  text-align:center;
+}
+
+h1 {
+  font-family: 'Orbitron', sans-serif;
+  font-size: clamp(3rem, 10vw, 6rem);
+  background: linear-gradient(90deg,#e63946,#ff7b86);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+}
+
+.tagline {
+  color: var(--text-muted);
+  margin-top:1rem;
+  font-size:1.2rem;
+}
+
+.featured {
+  padding: 3rem 1rem 4rem;
+  text-align:center;
+  position: relative;
+}
+
+.featured::before {
+  content:"";
+  position:absolute;
+  top:0; left:50%; transform:translateX(-50%);
+  width:120%; height:100%;
+  background: url('https://images.unsplash.com/photo-1585079541545-bfa10e6c61a0?auto=format&fit=crop&q=80&w=1400');
+  background-size:cover;
+  background-position:center;
+  filter:blur(30px) brightness(0.3);
+  z-index:0;
+}
+
+.featured-title {
+  font-family:'Orbitron';
+  font-size:2.2rem;
+  margin-bottom:2rem;
+  position: relative;
+  z-index:1;
+}
+
+.featured-card {
+  max-width:900px;
+  margin:auto;
+  padding:2.5rem;
+  border-radius:20px;
+  background: linear-gradient(145deg,#141420,#0f0f18);
+  border:1px solid var(--border);
+  box-shadow:0 30px 80px rgba(230,57,70,0.15);
+  position:relative;
+  overflow:hidden;
+  z-index:1;
+}
+
+.fighters {
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:3rem;
+  margin-bottom:2rem;
+}
+
+.fighters img {
+  width:150px;
+  height:150px;
+  object-fit:cover;
+  border-radius:50%;
+  border:3px solid var(--accent);
+  transition:0.3s ease;
+  background: #1a1a2e;
+}
+
+.fighters img:hover {
+  transform:scale(1.05);
+}
+
+.vs {
+  font-size:2rem;
+  font-weight:700;
+  color:var(--accent);
+}
+
+.event-title {
+  font-size:1.6rem;
+  margin-bottom:0.5rem;
+}
+
+.event-date {
+  color:var(--text-muted);
+  margin-bottom:1rem;
+}
+
+.status-badge {
+  display:inline-block;
+  padding:6px 14px;
+  border-radius:30px;
+  font-size:0.9rem;
+  font-weight:700;
+  margin-bottom:1rem;
+}
+
+.badge-live { background:#ff3b3b; color:white; }
+.badge-upcoming { background:#ffdd57; color:black; }
+
+.countdown {
+  font-size:1.8rem;
+  font-weight:700;
+  color:#ffdd57;
+  letter-spacing:1px;
+  margin-bottom:1rem;
+}
+
+.progress-bar {
+  height:8px;
+  width:100%;
+  background:#1c1c2a;
+  border-radius:20px;
+  margin:1rem 0 2rem;
+  overflow:hidden;
+}
+
+.progress-fill {
+  height:100%;
+  width:0%;
+  background:linear-gradient(90deg,#e63946,#ff7b86);
+  transition:width 1s linear;
+}
+
+.upcoming-list {
+  text-align:left;
+  margin-top:2rem;
+}
+
+.upcoming-list h3 {
+  margin-bottom:1rem;
+  font-size:1.2rem;
+  color:#ffdd57;
+}
+
+.date-group { margin-top:1rem; }
+
+.date-group h4 {
+  font-size:1rem;
+  margin-bottom:0.5rem;
+  color:#a0a0cc;
+}
+
+.mini-fight {
+  padding:0.7rem 0;
+  border-bottom:1px solid rgba(255,255,255,0.1);
+  font-size:0.95rem;
+}
+
+.mini-fight:last-child { border:none; }
+
+.live {
+  color:#ff3b3b;
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity:1; }
+  50% { opacity:0.4; }
+  100% { opacity:1; }
+}
+
+.api-error {
+  background: rgba(230,57,70,0.1);
+  border: 1px solid rgba(230,57,70,0.3);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-top: 1rem;
+  font-size: 0.9rem;
+  color: #ff9aa2;
+}
+
+.loading-spinner {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(230,57,70,0.3);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.cards {
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
+  gap:2rem;
+  padding:0 2rem 4rem;
+  max-width:1200px;
+  margin:auto;
+}
+
+.card {
+  background:var(--card);
+  border-radius:16px;
+  overflow:hidden;
+  border:1px solid var(--border);
+  transition:0.4s;
+  box-shadow:0 10px 30px rgba(0,0,0,0.5);
+}
+
+.card:hover {
+  transform:translateY(-10px);
+  border-color:var(--accent);
+  box-shadow:0 20px 50px rgba(230,57,70,0.25);
+}
+
+.card-img {
+  height:240px;
+  background-size:cover;
+  background-position:center;
+  filter:brightness(0.8);
+}
+
+.card-body { padding:2rem; }
+
+.card h2 {
+  font-size:2rem;
+  margin-bottom:1rem;
+}
+
+.card p {
+  color:var(--text-muted);
+  margin-bottom:1.5rem;
+}
+
+.btn {
+  display:inline-block;
+  background:var(--accent);
+  padding:0.8rem 1.8rem;
+  border-radius:50px;
+  color:white;
+  text-decoration:none;
+  font-weight:600;
+  transition:0.3s;
+}
+
+.btn:hover {
+  background:var(--accent-dark);
+  transform:scale(1.05);
+}
+
+footer {
+  text-align:center;
+  padding:3rem 1rem;
+  color:var(--text-muted);
+  border-top:1px solid var(--border);
+}
+
+[data-animate] {
+  opacity:0;
+  transform: translateY(20px);
+  transition: all 0.6s ease-out;
+}
+
+[data-animate].visible {
+  opacity:1;
+  transform: translateY(0);
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <h1>Fight Times</h1>
+  <p class="tagline">Real-time major UFC & Boxing schedules – Stay in the fight.</p>
+</header>
+
+<section class="featured">
+  <div class="featured-title">🔥 Next Big Fight</div>
+
+  <div class="featured-card" data-animate="fade">
+    <div class="fighters">
+      <img id="fighter1" src="UFC-bg.jpg" onerror="this.src='https://via.placeholder.com/150x150/1a1a2e/e63946?text=Fighter+1'">
+      <div class="vs">VS</div>
+      <img id="fighter2" src="UFC-bg.jpg" onerror="this.src='https://via.placeholder.com/150x150/1a1a2e/e63946?text=Fighter+2'">
+    </div>
+
+    <div class="event-title" id="eventTitle">
+      <span class="loading-spinner"></span> Loading event...
+    </div>
+    <div class="event-date" id="eventDate"></div>
+    <div id="statusBadge" class="status-badge"></div>
+
+    <div class="countdown" id="countdown"></div>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+
+    <div class="upcoming-list">
+      <h3>Upcoming Events</h3>
+      <div id="nextFights"><span class="loading-spinner"></span> Fetching fights...</div>
+    </div>
+
+    <div id="apiErrors"></div>
+  </div>
+</section>
+
+<div class="cards">
+  <div class="card" data-animate="fade">
+    <div class="card-img" style="background-image:url('UFC-bg.jpg');"></div>
+    <div class="card-body">
+      <h2>UFC Schedule</h2>
+      <p>Upcoming UFC events, Fight Nights, numbered cards – updated automatically.</p>
+      <a href="ufc.html" class="btn">View UFC Schedule</a>
+    </div>
+  </div>
+
+  <div class="card" data-animate="fade">
+    <div class="card-img"
+      style="background-image:url('https://images.unsplash.com/photo-1552072092-7f9b8d63efcb?auto=format&fit=crop&q=80&w=1200');">
+    </div>
+    <div class="card-body">
+      <h2>Boxing Schedule</h2>
+      <p>Major title fights, big names – curated and updated regularly.</p>
+      <a href="boxing.html" class="btn">View Boxing Schedule</a>
+    </div>
+  </div>
+</div>
+
+<footer>
+  © 2026 Fight Times • Powered by Cloudflare Pages
+</footer>
+
+<script>
+// ─── API FETCH (via Cloudflare Worker — no CORS issues) ──────────────────────
+async function fetchUFCEvents() {
+  return []; // data comes from fetchAllFights()
+}
+
+async function fetchBoxingEvents() {
+  return []; // data comes from fetchAllFights()
+}
+
+async function fetchAllFights() {
   try {
-    const [res1, res2] = await Promise.all([
-      fetch("https://api.balldontlie.io/mma/v1/events?status=scheduled&per_page=25", {
-        headers: { "Authorization": UFC_KEY }
-      }),
-      fetch("https://api.balldontlie.io/mma/v1/events?status=upcoming&per_page=25", {
-        headers: { "Authorization": UFC_KEY }
-      })
-    ]);
+    const res = await fetch("/api/fights");
 
-    const [data1, data2] = await Promise.all([
-      res1.json().catch(() => ({ data: [] })),
-      res2.json().catch(() => ({ data: [] }))
-    ]);
-
-    // Merge and deduplicate by id
-    const combined = [...(data1.data || []), ...(data2.data || [])];
-    const seen = new Set();
-    const deduped = combined.filter(e => {
-      if (seen.has(e.id)) return false;
-      seen.add(e.id);
-      return true;
-    });
-
-    // Sort by date ascending
-    deduped.sort((a, b) => new Date(a.date) - new Date(b.date));
-
-    ufcData = { data: deduped };
-  } catch (err) {
-    ufcData = { error: err.message, data: [] };
-  }
-
-  // ── Boxing ──
-  try {
-    const boxRes = await fetch("https://boxing-data-api.p.rapidapi.com/v1/events/?status=upcoming", {
-      method: "GET",
-      headers: {
-        "X-RapidAPI-Key":  BOXING_KEY,
-        "X-RapidAPI-Host": "boxing-data-api.p.rapidapi.com"
-      }
-    });
-    const text = await boxRes.text();
-    boxingData = JSON.parse(text);
-  } catch (err) {
-    boxingData = { error: err.message, data: [] };
-  }
-
-  return new Response(JSON.stringify({ ufc: ufcData, boxing: boxingData }), {
-    headers: {
-      "Content-Type": "application/json",
-      "Access-Control-Allow-Origin": "*"
+    if (!res.ok) {
+      throw new Error(`Worker responded with status ${res.status}: ${res.statusText}`);
     }
+
+    const data = await res.json();
+
+    // Normalize UFC/MMA events (actual structure: data.ufc.data[])
+    const rawUFC = data.ufc?.data || [];
+    const nowTime = new Date();
+    const ufcEvents = (Array.isArray(rawUFC) ? rawUFC : [])
+      .filter(e => e.date && new Date(e.date) > nowTime)
+      .map(e => ({
+        dateEvent:     e.date,
+        strEvent:      e.short_name || e.name || "TBA",
+        type:          e.league?.abbreviation || "MMA",
+        venue:         [e.venue_city, e.venue_country].filter(Boolean).join(", "),
+        fighter1Thumb: null,
+        fighter2Thumb: null,
+      }));
+
+    // Boxing API currently unavailable
+    const boxingEvents = [];
+
+    return { ufcEvents, boxingEvents };
+
+  } catch (err) {
+    console.error("fetchAllFights error:", err);
+    showApiError("API", err.message);
+    return { ufcEvents: [], boxingEvents: [] };
+  }
+}
+
+// ─── HELPERS ─────────────────────────────────────────────────────────────────
+function showApiError(source, message) {
+  const container = document.getElementById("apiErrors");
+  if (!container) return;
+  const div = document.createElement("div");
+  div.className = "api-error";
+  div.innerHTML = `⚠️ <strong>${source} API:</strong> ${message}`;
+  container.appendChild(div);
+}
+
+function isWithin7Days(dateStr) {
+  const today     = new Date();
+  const eventDate = new Date(dateStr);
+  const diff      = (eventDate - today) / (1000 * 60 * 60 * 24);
+  return diff >= -1 && diff <= 30; // show next 30 days
+}
+
+function getStatus(dateStr) {
+  const now   = new Date();
+  const event = new Date(dateStr);
+  const diff  = event - now;
+  if (diff <= 0 && diff > -86400000) return "LIVE";
+  if (diff <= 86400000 && diff > 0)  return "TOMORROW";
+  return "UPCOMING";
+}
+
+function createCountdownString(dateStr) {
+  const target = new Date(dateStr);
+  const diff   = target - new Date();
+  if (diff <= 0) return "LIVE NOW";
+  const d = Math.floor(diff / (1000 * 60 * 60 * 24));
+  const h = Math.floor((diff / (1000 * 60 * 60)) % 24);
+  const m = Math.floor((diff / (1000 * 60)) % 60);
+  const s = Math.floor((diff / 1000) % 60);
+  return `${d}d ${h}h ${m}m ${s}s`;
+}
+
+function startCountdownProgress(dateStr) {
+  const el    = document.getElementById("countdown");
+  const fill  = document.getElementById("progressFill");
+  const start = new Date();
+  const target= new Date(dateStr);
+
+  function update() {
+    const now  = new Date();
+    const diff = target - now;
+    if (diff <= 0) {
+      el.textContent = "LIVE NOW";
+      el.classList.add("live");
+      fill.style.width = "100%";
+      return;
+    }
+    const total    = target - start;
+    const progress = Math.min(100, ((total - diff) / total) * 100);
+    fill.style.width    = `${progress}%`;
+    el.textContent = createCountdownString(dateStr);
+  }
+
+  update();
+  setInterval(update, 1000);
+}
+
+// ─── MAIN LOADER ──────────────────────────────────────────────────────────────
+async function loadFeatured() {
+  const { ufcEvents, boxingEvents } = await fetchAllFights();
+
+  // Merge, filter to this week, sort ascending
+  const allEvents = [...ufcEvents, ...boxingEvents]
+    .sort((a, b) => new Date(a.dateEvent) - new Date(b.dateEvent));
+
+  const titleEl = document.getElementById("eventTitle");
+
+  if (!allEvents.length) {
+    titleEl.textContent = "No upcoming events found";
+    document.getElementById("nextFights").textContent = "Check back soon.";
+    return;
+  }
+
+  const main = allEvents[0];
+
+  // ── Featured card ──
+  titleEl.textContent = main.strEvent;
+  document.getElementById("eventDate").textContent = new Date(main.dateEvent).toDateString();
+
+  const badge   = document.getElementById("statusBadge");
+  const status  = getStatus(main.dateEvent);
+  badge.textContent = status;
+  badge.className   = `status-badge ${status === "LIVE" ? "badge-live" : "badge-upcoming"}`;
+
+  // Fighter images (fallback to placeholder if null)
+  const placeholder = "https://via.placeholder.com/150x150/1a1a2e/e63946?text=Fighter";
+  document.getElementById("fighter1").src = main.fighter1Thumb || placeholder;
+  document.getElementById("fighter2").src = main.fighter2Thumb || placeholder;
+
+  startCountdownProgress(main.dateEvent);
+
+  // ── Upcoming list grouped by date ──
+  const listEl  = document.getElementById("nextFights");
+  listEl.innerHTML = "";
+
+  const grouped = {};
+  allEvents.forEach(e => {
+    const key = new Date(e.dateEvent).toDateString();
+    if (!grouped[key]) grouped[key] = [];
+    grouped[key].push(e);
+  });
+
+  Object.entries(grouped).forEach(([date, fights]) => {
+    const group = document.createElement("div");
+    group.className = "date-group";
+
+    const h4 = document.createElement("h4");
+    h4.textContent = date;
+    group.appendChild(h4);
+
+    fights.forEach(f => {
+      const div = document.createElement("div");
+      div.className = "mini-fight";
+      const s = getStatus(f.dateEvent);
+      div.innerHTML = `
+        ${f.strEvent}
+        <span style="color:var(--text-muted)"> • ${f.type}</span>
+        <span class="${s === 'LIVE' ? 'live' : ''}" style="margin-left:6px;font-size:0.8rem;font-weight:600;">
+          ${s === 'LIVE' ? '● LIVE' : s}
+        </span>`;
+      group.appendChild(div);
+    });
+
+    listEl.appendChild(group);
   });
 }
+
+// ─── SCROLL ANIMATIONS ────────────────────────────────────────────────────────
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) entry.target.classList.add("visible");
+  });
+}, { threshold: 0.2 });
+
+document.querySelectorAll("[data-animate]").forEach(el => observer.observe(el));
+
+// ─── BOOT ─────────────────────────────────────────────────────────────────────
+loadFeatured();
+</script>
+
+</body>
+</html>
