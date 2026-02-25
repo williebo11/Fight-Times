@@ -1,15 +1,9 @@
 export async function onRequestGet(context) {
   try {
+    const SPORTRADAR_KEY = context.env.SPORTRADAR_KEY;
     const RAPID_KEY = context.env.RAPIDAPI_KEY;
-    // Optional: if you still want Sportradar fallback later, keep SPORTRADAR_KEY = context.env.SPORTRADAR_KEY;
 
-    // ─── UFC / MMA via RapidAPI MMA API ───
-    const MMA_API = "https://mmaapi.p.rapidapi.com/api/mma/unique-tournament/19906/tournament/114389/mma-events/all";
-
-    // ─── Boxing ───
-    const BOXING_API = "https://boxing-data-api.p.rapidapi.com/v1/events/schedule?days=30";
-
-    async function safeFetch(url, options = {}, timeoutMs = 12000) {
+    async function safeFetch(url, options = {}, timeoutMs = 10000) {
       const controller = new AbortController();
       const timer = setTimeout(() => controller.abort(), timeoutMs);
       try {
@@ -22,13 +16,19 @@ export async function onRequestGet(context) {
       }
     }
 
+    // Prepare date (hardcoded as in your first snippet; change to dynamic if needed)
+    const now = new Date();
+    const year  = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day   = String(now.getDate()).padStart(2, '0');
+
+    const MMA_URL = `https://api.sportradar.com/mma/trial/v2/en/schedules/2026-02-28/summaries.json?api_key=${SPORTRADAR_KEY}`;
+
+    const BOXING_API = "https://boxing-data-api.p.rapidapi.com/v1/events/schedule?days=30";
+
+    // Fetch both in parallel
     const [mmaRes, boxingRes] = await Promise.all([
-      safeFetch(MMA_API, {
-        headers: {
-          "X-RapidAPI-Key": RAPID_KEY,
-          "X-RapidAPI-Host": "mmaapi.p.rapidapi.com",
-        },
-      }),
+      safeFetch(MMA_URL),  // Sportradar MMA (UFC-ish)
       safeFetch(BOXING_API, {
         headers: {
           "X-RapidAPI-Key": RAPID_KEY,
@@ -37,55 +37,59 @@ export async function onRequestGet(context) {
       }),
     ]);
 
-    // ─── Process UFC/MMA ───
-    let ufcEvents = [];
-    let mmaDebug = { status: mmaRes?.status || "no response", error: null };
+    // ─── Process MMA (Sportradar) ───
+    let mmaRaw = null;
+    let mmaDebug = { url: MMA_URL.replace(SPORTRADAR_KEY, 'REDACTED'), status: mmaRes?.status || "no response" };
 
-    if (mmaRes && mmaRes.ok) {
+    if (mmaRes) {
+      const text = await mmaRes.text();
       try {
-        const mmaData = await mmaRes.json();
-        // The endpoint usually returns { events: [...] } or directly array or { data: [...] }
-        ufcEvents = mmaData?.events || mmaData?.data || mmaData || [];
-        // Optional: filter only upcoming if the API includes past ones
-        ufcEvents = ufcEvents.filter(event => {
-          const eventDate = new Date(event.startTime || event.date || event.datetime);
-          return eventDate > new Date();
-        });
-      } catch (parseErr) {
-        mmaDebug.error = `Parse failed: ${parseErr.message}`;
+        mmaRaw = JSON.parse(text);
+      } catch (e) {
+        mmaRaw = text; // fallback to raw text on parse error
+        mmaDebug.parseError = e.message;
       }
-    } else if (mmaRes) {
-      mmaDebug.error = `HTTP ${mmaRes.status}`;
     } else {
-      mmaDebug.error = "fetch timeout or failed";
+      mmaDebug.error = "fetch failed or timeout";
+    }
+
+    // Optional: extract UFC fights only (as before)
+    let ufcFights = [];
+    if (mmaRaw?.summaries) {
+      ufcFights = mmaRaw.summaries.filter(summary =>
+        summary.sport_event?.sport_event_context?.category?.name === "UFC"
+      );
     }
 
     // ─── Process Boxing ───
     let boxingData = [];
-    let boxingDebug = { status: boxingRes?.status || "no response", error: null };
+    let boxingDebug = { status: boxingRes?.status || "no response" };
 
-    if (boxingRes && boxingRes.ok) {
-      try {
-        boxingData = await boxingRes.json();
-        // If it's wrapped (e.g. { events: [...] }), unwrap
-        if (boxingData?.events) boxingData = boxingData.events;
-      } catch (parseErr) {
-        boxingDebug.error = `Parse failed: ${parseErr.message}`;
+    if (boxingRes) {
+      if (boxingRes.ok) {
+        try {
+          boxingData = await boxingRes.json();
+        } catch (parseErr) {
+          boxingDebug.parseError = parseErr.message;
+        }
+      } else {
+        const errorText = await boxingRes.text().catch(() => "no body");
+        boxingDebug.error = `HTTP ${boxingRes.status}: ${errorText}`;
+        throw new Error(`Boxing API ${boxingRes.status}: ${errorText}`);
       }
-    } else if (boxingRes) {
-      boxingDebug.error = `HTTP ${boxingRes.status}`;
     } else {
-      boxingDebug.error = "fetch timeout or failed";
+      boxingDebug.error = "fetch failed or timeout";
     }
 
     // ─── Final Response ───
     return new Response(
       JSON.stringify({
-        ufc: ufcEvents,
-        boxing: boxingData,
+        ufc: ufcFights,          // filtered UFC bouts from Sportradar
+        boxing: boxingData,      // full boxing schedule
+        rawUfc: mmaRaw,          // full Sportradar response if needed
         count: {
-          ufcEvents: ufcEvents.length,
-          boxingEvents: boxingData.length,
+          ufcFights: ufcFights.length,
+          boxingEvents: boxingData.length || 0,
         },
         _debug: {
           mma: mmaDebug,
@@ -102,12 +106,13 @@ export async function onRequestGet(context) {
     );
 
   } catch (err) {
-    // Global safety net — worker will never 1101
-    console.error("Fights endpoint crashed:", err.message, err.stack);
+    // Safety net: always return JSON, never let Worker crash
+    console.error("Fights endpoint error:", err.message, err.stack);
     return new Response(
       JSON.stringify({
-        error: "Internal error fetching fight data",
+        error: "Failed to fetch fight data",
         message: err.message || "Unknown error",
+        _debug: { timestamp: new Date().toISOString() },
       }),
       {
         status: 500,
