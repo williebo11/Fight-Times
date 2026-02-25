@@ -65,12 +65,3 @@ export async function onRequestGet(context) {
     }
   );
 }
-```
-
-**Two things you need to do:**
-
-1. **Add the key to Cloudflare** — go to your Pages project → Settings → Environment Variables → add `SPORTRADAR_KEY` with value `dd182ebd-221a-4ccf-a649-02806c1ce388`
-
-2. **Check if it's trial or production** — if the trial URL returns a 401, swap `trial` for `production` in the URL. You can also just test it in your browser first:
-```
-https://api.sportradar.com/mma/trial/v2/en/schedules/upcoming/schedule.json?api_key=dd182ebd-221a-4ccf-a649-02806c1ce388
