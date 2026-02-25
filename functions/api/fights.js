@@ -1,6 +1,5 @@
 export async function onRequest(context) {
-  const UFC_KEY    = "dd182ebd-221a-4ccf-a649-02806c1ce388";
-  const BOXING_KEY = "ecb9ddf1b3msh9a639108aea55e9p19af3fjsn3f3aedde51b9";
+  const UFC_KEY = "dd182ebd-221a-4ccf-a649-02806c1ce388";
 
   let ufcData    = { error: null, data: [] };
   let boxingData = { error: null, data: [] };
@@ -16,17 +15,13 @@ export async function onRequest(context) {
     ufcData = { error: err.message, data: [] };
   }
 
-  // ── Boxing (correct schedule endpoint) ──
+  // ── Boxing (TheSportsDB — free, no key needed) ──
+  // League ID 4480 = Boxing
   try {
-    const boxRes = await fetch("https://boxing-data-api.p.rapidapi.com/v1/events/schedule?days=2&past_hours=12&date_sort=ASC&page_num=1&page_size=25", {
-      method: "GET",
-      headers: {
-        "x-rapidapi-key":  BOXING_KEY,
-        "x-rapidapi-host": "boxing-data-api.p.rapidapi.com"
-      }
-    });
+    const boxRes = await fetch("https://www.thesportsdb.com/api/v1/json/123/eventsnextleague.php?id=4480");
     const text = await boxRes.text();
-    boxingData = JSON.parse(text);
+    const parsed = JSON.parse(text);
+    boxingData = { data: parsed.events || [] };
   } catch (err) {
     boxingData = { error: err.message, data: [] };
   }
